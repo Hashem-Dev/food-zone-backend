@@ -7,6 +7,8 @@ const connectDB = require("./config/database-config");
 const globalErrors = require("./services/global-errors");
 const ApiErrors = require("./utils/api-errors");
 const port = process.env.PORT || 5000;
+const api = process.env.API;
+const path = require("path");
 const app = express();
 
 app.use(express.json());
@@ -23,14 +25,14 @@ connectDB(() =>
   })
 );
 
-/** @WelcomeRoute */
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Hello, World!" });
-});
+app.use(
+  `${api}/uploads/avatars/`,
+  express.static(path.join(__dirname, "./uploads/avatars"))
+);
 
 /** @ErrorHandling */
 
-app.all("*", (req, next) => {
+app.all("*", (req, res, next) => {
   const error = new ApiErrors(
     `Can not find this resource ${req.originalUrl}`,
     404
