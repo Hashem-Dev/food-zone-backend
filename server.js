@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors);
-// psi6w7kdtu44mzs
+
 mongoose
   .connect(databaseUrl)
   .then((connect) => {
