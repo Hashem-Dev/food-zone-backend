@@ -7,6 +7,7 @@ corsOptions = {
     if (whitelist.indexOf(origin) !== -1) {
       cb(null, true);
     } else {
+      console.log("sdfsdf");
       cb(new Error("Not allowed by CORS"));
     }
   },
