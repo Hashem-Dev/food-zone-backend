@@ -2,12 +2,24 @@ const { Schema, model } = require("mongoose");
 const userSchema = new Schema(
   {
     name: {
-      type: String,
-      required: [true, "Name is required"],
-      minLength: [8, "Name is too short"],
-      maxLength: [32, "Name is too long"],
+      en: {
+        type: String,
+        required: [true, "EN name is required"],
+        minLength: [8, "Name is too short"],
+        maxLength: [32, "Name is too long"],
+      },
+      ar: {
+        type: String,
+        required: [true, "AR name is required"],
+        minLength: [8, "Name is too short"],
+        maxLength: [32, "Name is too long"],
+      },
     },
-    slug: { type: String, required: [true, "Slug is required"] },
+    slug: {
+      type: String,
+      required: [true, "Slug is required"],
+      lowercase: true,
+    },
     email: {
       type: String,
       unique: [true, "E-mail already exists"],

@@ -13,13 +13,20 @@ const port = process.env.PORT || 5000;
 const api = process.env.API;
 const app = express();
 
+/** @Routes */
+
+const usersRoutes = require("./routes/user");
+
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use(cors);
+
+/** @language */
 app.use(locale.localization);
 app.use(locale.serverLanguage);
+
 /** @Connect to MongoDB Database */
 connectDB(() =>
   app.listen(port, () => {
@@ -30,13 +37,16 @@ connectDB(() =>
   })
 );
 
+/** @Images */
 app.use(
   `${api}/uploads/avatars/`,
   express.static(path.join(__dirname, "./uploads/avatars"))
 );
 
-/** @ErrorHandling */
+/** @Mount routes */
+app.use(`${api}/users`, usersRoutes);
 
+/** @ErrorHandling */
 app.all("*", (req, res, next) => {
   const error = new ApiErrors(
     `Can not find this resource ${req.originalUrl}`,
@@ -44,4 +54,5 @@ app.all("*", (req, res, next) => {
   );
   return next(error);
 });
+
 app.use(globalErrors);

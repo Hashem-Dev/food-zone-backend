@@ -1,4 +1,8 @@
 {
   "Hello": "Hello",
-  "Restaurant not found": "Restaurant not found"
+  "name_str": "Name must be a string",
+  "name_min": "Name length must be greater than 8",
+  "name_max": "Name is too long",
+  "email_invalid": "Please enter a valid email address",
+  "password_req": "The password must be at least 8 characters long, and include one symbol and one capital letter"
 }
