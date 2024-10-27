@@ -1,7 +1,7 @@
 const globalErrors = (error, req, res, next) => {
-  message = error.message;
-  statusCode = error.statusCode || 500;
-  statusError = error.status || "Error";
+  const message = error.message;
+  const statusCode = error.statusCode || 500;
+  const statusError = error.status || "Error";
   if (process.env.NODE_ENV === "development") {
     return res.status(statusCode).json({
       status: statusError,

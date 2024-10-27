@@ -30,14 +30,14 @@ async function sendRegisterOtp(email, lang) {
             إذا لم تقم بطلب هذا، يمكنك تجاهل هذه الرسالة.
 
             تحياتنا،
-            فريق الدعم`,
+            فريق دعم فود زون`,
       html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2>مرحبًا!</h2>
                 <p>شكرًا لتسجيلك معنا. لإكمال عملية التسجيل، يرجى إدخال رمز التحقق التالي:</p>
                 <h3 style="color: #4CAF50;">رمز التحقق: <strong>${otpEmail}</strong></h3>
                 <p>إذا لم تقم بطلب هذا، يمكنك تجاهل هذه الرسالة.</p>
-                <p style="margin-top: 20px;">تحياتنا,<br>فريق الدعم</p>
+                <p style="margin-top: 20px;">تحياتنا,<br>فريق دعم فود زون</p>
             </div>
         `,
     };
@@ -56,14 +56,14 @@ async function sendRegisterOtp(email, lang) {
               If you did not request this, you can ignore this email.
 
               Best regards,
-              Support Team`,
+              Food Zone Support Team`,
       html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2>Hello!</h2>
                 <p>Thank you for registering with us. To complete the registration process, please enter the following verification code:</p>
                 <h3 style="color: #4CAF50;">Verification Code: <strong>${otpEmail}</strong></h3>
                 <p>If you did not request this, you can ignore this email.</p>
-                <p style="margin-top: 20px;">Best regards,<br>Support Team</p>
+                <p style="margin-top: 20px;">Best regards,<br>Food Zone Support Team</p>
             </div>
         `,
     };
@@ -83,7 +83,7 @@ async function sendPasswordOtp(email, lang) {
 
   if (lang === "ar") {
     mailOptions = {
-      from: `"كوفي بينز" <${process.env.APP_EMAIL}>`,
+      from: `"فود زون" <${process.env.APP_SERVER_EMAIL}>`,
       to: email,
       bcc: process.env.APP_EMAIL,
       subject: "تغيير كلمة المرور - رمز التحقق الخاص بك",
@@ -103,16 +103,16 @@ async function sendPasswordOtp(email, lang) {
               <p>لقد تلقينا طلباً لتغيير كلمة المرور الخاصة بك. للمتابعة، يرجى إدخال رمز التحقق التالي:</p>
               <h3 style="color: #4CAF50;">رمز التحقق: <strong>${otpPassword}</strong></h3>
               <p>إذا لم تطلب هذا، يمكنك تجاهل هذا البريد الإلكتروني.</p>
-              <p style="margin-top: 20px;">مع أطيب التحيات,<br>فريق الدعم</p>
+              <p style="margin-top: 20px;">مع أطيب التحيات,<br> فريق دعم فود زون</p>
             </div>
         `,
     };
   } else {
     mailOptions = {
-      from: `"Coffee Beans" <${process.env.APP_EMAIL}>`,
+      from: `"Food Zone" <${process.env.APP_EMAIL}>`,
       to: email,
       bcc: process.env.APP_EMAIL,
-      subject: "Email Confirmation - Your Verification Code",
+      subject: "Change Password Confirmation - Your Verification Code",
       text: `Hello,
 
             We received a request to change your password. To proceed, please enter the following verification code:
@@ -130,7 +130,7 @@ async function sendPasswordOtp(email, lang) {
               <p>We received a request to change your password. To proceed, please enter the following verification code:</p>
               <h3 style="color: #4CAF50;">Verification Code: <strong>${otpPassword}</strong></h3>
               <p>If you did not request this, you can ignore this email.</p>
-              <p style="margin-top: 20px;">Best regards,<br>Support Team</p>
+              <p style="margin-top: 20px;">Best regards,<br>Food Zone Support Team</p>
           </div>
 
         `,
