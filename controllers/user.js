@@ -1,14 +1,13 @@
-const User = require("../models/User");
 const bcrypt = require("bcrypt");
-
 const asyncHandler = require("express-async-handler");
+const User = require("../models/User");
 const ApiErrors = require("../utils/api-errors");
+
 const { sendRegisterOtp, sendPasswordOtp } = require("../utils/otp-sender");
 const {
   accessTokenGenerator,
   refreshTokenGenerator,
 } = require("../utils/token-generator");
-const ApiSuccess = require("../utils/api-success");
 
 /**
  * @desc Creates a new user account
@@ -36,7 +35,7 @@ const register = asyncHandler(async (req, res, next) => {
   });
 
   if (!newUser) {
-    return next(new ApiErrors("Could not create new user", 400));
+    return next(new ApiErrors(req.__("user_create_fail"), 400));
   }
 
   /** @token */
@@ -57,16 +56,16 @@ const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   const foundUser = await User.findOne({ email });
   if (!foundUser) {
-    return next(new ApiErrors("The user could not be found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const verifyPassword = await bcrypt.compare(password, foundUser.password);
   if (!verifyPassword) {
-    return next(new ApiErrors("Login data is not valid", 404));
+    return next(new ApiErrors(req.__("login_invalid"), 404));
   }
 
   if (!(foundUser.emailOtp === 1)) {
-    return next(new ApiErrors("You have to verify your email first.", 409));
+    return next(new ApiErrors(req.__("verify_email_first"), 409));
   }
 
   foundUser.accessToken = accessTokenGenerator(foundUser);
@@ -90,28 +89,27 @@ const verifyEmailOtp = asyncHandler(async (req, res, next) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new ApiErrors("The user could not be found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   if (user.emailOtp === 1) {
-    return next(new ApiSuccess("Your account is verified."));
+    return res.status(200).json({
+      status: "Success",
+      message: req.__("account_verified"),
+    });
   }
 
   const dateNow = new Date();
   const dbDate = new Date(user.emailOtpExpire);
-  if (dateNow > dbDate) {
-    return next(new ApiErrors("Your verification code has expired", 400));
-  }
-
-  if (!(otp === user.emailOtp)) {
-    return next(new ApiErrors("The OTP is not valid", 400));
+  if (dateNow > dbDate || !(otp === user.emailOtp)) {
+    return next(new ApiErrors(req.__("otp_invalid"), 400));
   }
 
   user.emailOtp = 1;
   user.emailOtpExpire = undefined;
   await user.save();
   return res.status(200).json({
-    message: "Your account has been verified",
+    message: req.__("account_verified"),
     accessToken: user.accessToken,
     refreshToken: user.refreshToken,
   });
@@ -127,17 +125,20 @@ const newEmailOtp = asyncHandler(async (req, res, next) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   if (user.emailOtp === 1) {
-    return next(new ApiSuccess("You already verified your account"));
+    return res.status(200).json({
+      status: "Success",
+      message: req.__("account_already_verified"),
+    });
   }
 
   const dateNow = new Date();
   const dbDate = new Date(user.emailOtpExpire);
   if (dateNow < dbDate) {
-    return next(new ApiErrors("Please wait for the last otp to expire", 400));
+    return next(new ApiErrors(req.__("otp_wait_expire"), 400));
   }
 
   const emailOtp = await sendRegisterOtp(email, req.language);
@@ -147,9 +148,10 @@ const newEmailOtp = asyncHandler(async (req, res, next) => {
 
   user.save();
 
-  return next(
-    new ApiSuccess("Verification code has been sent to your email address")
-  );
+  return res.status(200).json({
+    status: "Success",
+    message: req.__("otp_sent_email"),
+  });
 });
 
 /**
@@ -161,7 +163,7 @@ const forgotPasswordOtp = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const passwordOtp = await sendPasswordOtp(email, req.language);
@@ -172,7 +174,10 @@ const forgotPasswordOtp = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
-  return next(new ApiSuccess("Your OTP password send to your email"));
+  return res.status(200).json({
+    status: "Success",
+    message: req.__("otp_sent_success"),
+  });
 });
 
 /**
@@ -185,16 +190,20 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   if (!(user.passwordOtp === 1)) {
-    return next(new ApiErrors("You have to verify your OTP password", 400));
+    return next(new ApiErrors(req.__("otp_verify_required"), 400));
   }
 
   user.password = newPassword;
+  user.passwordOtp = 0;
   await user.save();
-  return next(new ApiSuccess("Your password is updated successfully"));
+  return res.status(200).json({
+    status: "Success",
+    message: req.__("password_update_success"),
+  });
 });
 
 /**
@@ -206,27 +215,31 @@ const verifyPasswordOtp = asyncHandler(async (req, res, next) => {
   const { email, otp } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   if (user.passwordOtp === 1) {
-    return next(new ApiSuccess("You have already verified otp password "));
+    return res.status(200).json({
+      status: "Success",
+      message: req.__("otp_already_verified"),
+    });
   }
 
   const dateNow = new Date();
   const dbDate = new Date(user.passwordOtpExpire);
 
   if (dateNow > dbDate || !(user.passwordOtp === otp)) {
-    return next(
-      new ApiErrors("Your verification code is expire or invalid", 400)
-    );
+    return next(new ApiErrors(req.__("otp_invalid"), 400));
   }
 
   user.passwordOtp = 1;
   user.passwordOtpExpire = undefined;
   await user.save();
 
-  return next(new ApiSuccess("Otp verification is done successfully"));
+  return res.status(200).json({
+    status: "Success",
+    message: req.__("otp_verification_success"),
+  });
 });
 
 /**
@@ -235,7 +248,90 @@ const verifyPasswordOtp = asyncHandler(async (req, res, next) => {
  * @access protected
  */
 const updateUser = asyncHandler(async (req, res, next) => {
-  return res.status(200).json({ data: "Update user endpoint" });
+  const userId = req.user;
+  const { email, password, phone } = req.body;
+  const name = req.body.name;
+  const slug = req.body.slug;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new ApiErrors(req.__("user_not_found"), 404));
+  }
+
+  if (email) {
+    if (email === user.email) {
+      return next(new ApiErrors(req.__("email_belong_to_account"), 409));
+    }
+    const existsEmail = await User.findOne({ email });
+    if (existsEmail) {
+      return next(new ApiErrors(req.__("email_already_in_use"), 409));
+    }
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    { _id: userId },
+    {
+      $set: {
+        name,
+        slug,
+        email,
+        password,
+        phone,
+      },
+    },
+    { new: true, context: { req: req } }
+  );
+
+  if (!updatedUser) {
+    return next(new ApiErrors(req.__("user_update_fail"), 400));
+  }
+
+  return res.status(200).json({ updatedUser });
+});
+
+/**
+ * @desc Upload user avatar
+ * @route POST /api/v1/users/avatar
+ * @access protected
+ */
+const uploadUserAvatar = asyncHandler(async (req, res, next) => {
+  const userId = req.user;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return next(new ApiErrors(req.__("user_not_found"), 404));
+  }
+  user.avatar = req.file.filename;
+  await user.save();
+
+  return res
+    .status(200)
+    .json({ status: "Success", message: req.__("profile_image_added") });
+});
+
+/**
+ * @desc Logout user
+ * @route POST /api/v1/users/logout
+ * @access protected
+ */
+
+const logout = asyncHandler(async (req, res, next) => {
+  // const authHeader = req.headers["Authorization"] || req.headers.authorization;
+  // const accessToken = authHeader.replace("Bearer ").trim();
+  // console.log(accessToken);
+
+  const { refreshToken } = req.body;
+  const user = await User.findOneAndUpdate(
+    { refreshToken },
+    { $set: { logout: new Date(), refreshToken: null, accessToken: null } },
+    { new: true }
+  );
+
+  if (!user) {
+    return next(new ApiErrors(req.__("user_not_found"), 404));
+  }
+
+  return res.status(200).json({ status: "Success", message: "logout_success" });
 });
 
 module.exports = {
@@ -247,4 +343,6 @@ module.exports = {
   verifyPasswordOtp,
   resetPassword,
   updateUser,
+  uploadUserAvatar,
+  logout,
 };

@@ -5,8 +5,14 @@ const {
 } = require("../../middlewares/api-validation");
 const { slugifyName } = require("../../utils/api-slugify");
 
-const validateName = (name) => {
-  return check(name)
+const validateName = (name, optional = false) => {
+  const validation = check(name);
+
+  if (optional) {
+    validation.optional();
+  }
+
+  validation
     .isString()
     .trim()
     .withMessage((_, { req }) => {
@@ -24,22 +30,32 @@ const validateName = (name) => {
       slugifyName(name, req);
       return true;
     });
+  return validation;
 };
 
-const validateEmail = (email) => {
-  return check(email)
-    .isEmail()
-    .withMessage((_, { req }) => {
-      return validationMessage(req, "email_invalid");
-    });
+const validateEmail = (email, optional = false) => {
+  const validation = check(email);
+  if (optional) {
+    validation.optional();
+  }
+
+  validation.isEmail().withMessage((_, { req }) => {
+    return validationMessage(req, "email_invalid");
+  });
+  return validation;
 };
 
-const validatePassword = (password) => {
-  return check(password)
-    .isStrongPassword()
-    .withMessage((_, { req }) => {
-      return validationMessage(req, "password_req");
-    });
+const validatePassword = (password, optional = false) => {
+  const validation = check(password);
+
+  if (optional) {
+    validation.optional();
+  }
+
+  validation.isStrongPassword().withMessage((_, { req }) => {
+    return validationMessage(req, "password_req");
+  });
+  return validation;
 };
 
 const validateOtp = (otp) => {
@@ -87,6 +103,14 @@ const resetPasswordValidator = [
   validatePassword("newPassword"),
   validationMiddleware,
 ];
+
+const updateUserValidator = [
+  validateName("username", true),
+  validateEmail("email", true),
+  validatePassword("password", true),
+  validationMiddleware,
+];
+
 module.exports = {
   registerValidator,
   loginValidator,
@@ -95,4 +119,5 @@ module.exports = {
   forgotPasswordOtpValidator,
   verifyPasswordOtpValidator,
   resetPasswordValidator,
+  updateUserValidator,
 };

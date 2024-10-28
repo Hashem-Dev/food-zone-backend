@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcrypt");
+const { sendEmailChangeOtp } = require("../utils/otp-sender");
 const userSchema = new Schema(
   {
     name: {
@@ -31,7 +32,7 @@ const userSchema = new Schema(
       required: [true, "Password is required"],
       minLength: 8,
     },
-    avatar: { type: String, default: "uploads/avatars/avatar.png" },
+    avatar: { type: String, default: "avatar.png" },
     phone: { type: Number, default: "0981534952" },
     phoneVerification: { type: Boolean, default: false },
     passwordOtp: { type: Number, default: 0 },
@@ -52,6 +53,7 @@ const userSchema = new Schema(
     isAdmin: { type: Boolean, default: false },
     accessToken: { type: String },
     refreshToken: { type: String },
+    logout: { type: Date },
   },
   { timestamps: true }
 );
@@ -70,6 +72,37 @@ userSchema.pre("save", async function (next) {
     next();
   } catch (error) {
     next(error);
+  }
+});
+
+/** Send verification code after updating user email */
+userSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate();
+  if (this.options.context) {
+    const req = this.options.context.req;
+    const thisUser = await this.model.findOne(this.getQuery());
+    try {
+      if (update && update.$set) {
+        if (update.$set.password) {
+          const salt = await bcrypt.genSalt(12);
+          update.$set.password = await bcrypt.hash(update.$set.password, salt);
+        }
+
+        if (update.$set.email) {
+          const emailOtp = await sendEmailChangeOtp(
+            update.$set.email,
+            req.language
+          );
+          emailOtpExpire = Date.now() + 10 * 60 * 1000;
+          thisUser.emailOtp = emailOtp;
+          thisUser.emailOtpExpire = emailOtpExpire;
+          await thisUser.save();
+        }
+      }
+      next();
+    } catch (error) {
+      next(error);
+    }
   }
 });
 const User = model("User", userSchema);

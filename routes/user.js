@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const upload = require("../services/uploader/avatar-uploader");
 /** @endpoints */
 const {
   register,
@@ -11,6 +11,8 @@ const {
   verifyPasswordOtp,
   resetPassword,
   updateUser,
+  uploadUserAvatar,
+  logout,
 } = require("../controllers/user");
 
 /** @validators */
@@ -22,14 +24,18 @@ const {
   forgotPasswordOtpValidator,
   verifyPasswordOtpValidator,
   resetPasswordValidator,
+  updateUserValidator,
 } = require("../services/validators/user");
-const { verifyToken } = require("../middlewares/verify-token");
+const {
+  verifyToken,
+  verifyAdminToken,
+} = require("../middlewares/verify-token");
 
 router
   .route("/")
   .post(registerValidator, register)
   .get(loginValidator, login)
-  .patch(verifyToken, updateUser);
+  .patch(verifyToken, updateUserValidator, updateUser);
 
 router
   .route("/email")
@@ -42,5 +48,11 @@ router
   .patch(verifyPasswordOtpValidator, verifyPasswordOtp);
 
 router.route("/reset-password").patch(resetPasswordValidator, resetPassword);
+
+router
+  .route("/avatar")
+  .post(verifyToken, upload.single("avatar"), uploadUserAvatar);
+
+router.route("/logout").post(verifyToken, logout);
 
 module.exports = router;

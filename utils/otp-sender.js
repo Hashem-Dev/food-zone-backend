@@ -11,8 +11,6 @@ let transporter = nodemailer.createTransport({
   },
 });
 async function sendRegisterOtp(email, lang) {
-  console.log(lang);
-
   let mailOptions;
 
   if (lang === "ar") {
@@ -146,4 +144,71 @@ async function sendPasswordOtp(email, lang) {
   return otpPassword;
 }
 
-module.exports = { sendRegisterOtp, sendPasswordOtp };
+async function sendEmailChangeOtp(email, lang) {
+  let mailOptions;
+
+  if (lang === "ar") {
+    mailOptions = {
+      from: `"فود زون" <${process.env.APP_SERVER_EMAIL}>`,
+      to: email,
+      bcc: process.env.APP_SERVER_EMAIL,
+      subject: "تأكيد تغيير البريد الإلكتروني - رمز التحقق الخاص بك",
+      text: `مرحبًا!
+
+            لقد طلبت تغيير بريدك الإلكتروني. لتأكيد هذا التغيير، يرجى إدخال رمز التحقق التالي:
+
+            رمز التحقق: ${otpEmail}
+
+            إذا لم تقم بطلب هذا، يمكنك تجاهل هذه الرسالة.
+
+            تحياتنا،
+            فريق دعم فود زون`,
+      html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2>مرحبًا!</h2>
+                <p>لقد طلبت تغيير بريدك الإلكتروني. لتأكيد هذا التغيير، يرجى إدخال رمز التحقق التالي:</p>
+                <h3 style="color: #4CAF50;">رمز التحقق: <strong>${otpEmail}</strong></h3>
+                <p>إذا لم تقم بطلب هذا، يمكنك تجاهل هذه الرسالة.</p>
+                <p style="margin-top: 20px;">تحياتنا,<br>فريق دعم فود زون</p>
+            </div>
+        `,
+    };
+  } else {
+    mailOptions = {
+      from: `"Food Zone" <${process.env.APP_SERVER_EMAIL}>`,
+      to: email,
+      bcc: process.env.APP_SERVER_EMAIL,
+      subject: "Email Change Confirmation - Your Verification Code",
+      text: `Hello!
+
+              You requested to change your email address. To confirm this change, please enter the following verification code:
+
+              Verification Code: ${otpEmail}
+
+              If you did not request this, you can ignore this email.
+
+              Best regards,
+              Food Zone Support Team`,
+      html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2>Hello!</h2>
+                <p>You requested to change your email address. To confirm this change, please enter the following verification code:</p>
+                <h3 style="color: #4CAF50;">Verification Code: <strong>${otpEmail}</strong></h3>
+                <p>If you did not request this, you can ignore this email.</p>
+                <p style="margin-top: 20px;">Best regards,<br>Food Zone Support Team</p>
+            </div>
+        `,
+    };
+  }
+
+  transporter.sendMail(mailOptions, (error) => {
+    if (error) {
+      return console.log("Error: " + error);
+    }
+    console.log(`Message sent successfully to ${email}`);
+  });
+
+  return otpEmail;
+}
+
+module.exports = { sendRegisterOtp, sendPasswordOtp, sendEmailChangeOtp };

@@ -5,7 +5,7 @@ const accessTokenGenerator = (payload) => {
   const accessToken = jwt.sign(
     { id: payload._id, role: payload.role, isAdmin: payload.isAdmin },
     secretKey,
-    { expiresIn: "1m" }
+    { expiresIn: "15m" }
   );
   return accessToken;
 };
