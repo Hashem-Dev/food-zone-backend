@@ -15,11 +15,26 @@ const {
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
-  const { slug, name, email, password } = req.body;
-
+  const { slug, name, email, password, adminAccessKey } = req.body;
+  let { isAdmin, role } = req.body;
   const existsUser = await User.findOne({ email });
   if (existsUser) {
     return next(new ApiErrors(req.__("email_exists"), 409));
+  }
+
+  if (isAdmin) {
+    if (
+      role === "admin" &&
+      adminAccessKey &&
+      !(adminAccessKey === process.env.ADMIN_ACCESS_KEY)
+    ) {
+      return next(
+        new ApiErrors("Forbidden, you must provide admin access key", 403)
+      );
+    }
+  } else {
+    role = "user";
+    isAdmin = false;
   }
 
   const emailOtp = await sendRegisterOtp(email, req.language);
@@ -30,6 +45,8 @@ const register = asyncHandler(async (req, res, next) => {
     slug,
     email,
     password,
+    isAdmin,
+    role,
     emailOtp,
     emailOtpExpire,
   });
@@ -314,12 +331,7 @@ const uploadUserAvatar = asyncHandler(async (req, res, next) => {
  * @route POST /api/v1/users/logout
  * @access protected
  */
-
 const logout = asyncHandler(async (req, res, next) => {
-  // const authHeader = req.headers["Authorization"] || req.headers.authorization;
-  // const accessToken = authHeader.replace("Bearer ").trim();
-  // console.log(accessToken);
-
   const { refreshToken } = req.body;
   const user = await User.findOneAndUpdate(
     { refreshToken },

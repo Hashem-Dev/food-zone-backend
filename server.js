@@ -16,6 +16,8 @@ const app = express();
 
 /** @Routes */
 const usersRoutes = require("./routes/user");
+const adminRoutes = require("./routes/admin");
+const addressRoutes = require("./routes/address");
 
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {
@@ -41,7 +43,9 @@ connectDB(() =>
 app.use(express.static(path.join(__dirname, "./uploads/avatars")));
 
 /** @Mount routes */
+app.use(`${api}/admin`, adminRoutes);
 app.use(`${api}/users`, usersRoutes);
+app.use(`${api}/address`, addressRoutes);
 
 /** @ErrorHandling */
 

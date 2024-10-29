@@ -17,6 +17,18 @@ const verifyToken = async (req, res, next) => {
       return next(new ApiErrors("This route requires authorization", 403));
     }
     const token = authHeader.replace("Bearer ", "").trim();
+
+    // const existToken = await User.findOne({ accessToken: token });
+
+    // if (!existToken) {
+    //   return next(
+    //     new ApiErrors(
+    //       "You are not allowed to access this route, token not found",
+    //       404
+    //     )
+    //   );
+    // }
+
     jwt.verify(token, tokenSecretKey, async (error) => {
       const data = jwt.decode(token);
 
@@ -76,6 +88,15 @@ const refreshToken = asyncHandler(async (token, req, res, next) => {
   const user = await User.findById(data.id);
   if (!user) {
     return next(new ApiErrors("This user not found in database", 404));
+  }
+
+  if (!user.refreshToken) {
+    return next(
+      new ApiErrors(
+        "You must be logged in to refresh your authentication token",
+        403
+      )
+    );
   }
 
   const verifyToken = jwt.verify(user.refreshToken, tokenSecretKey, (error) => {
