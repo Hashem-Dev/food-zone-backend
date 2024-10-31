@@ -122,12 +122,14 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
   randomRestaurants = await Restaurant.find({
     "coords.latitude": latitude,
     "coords.longitude": longitude,
+    verification: "Verified",
     isAvailable: true,
   }).limit(5);
 
   if (randomRestaurants.length === 0) {
     message = "No restaurants found in your location";
     randomRestaurants = await Restaurant.find({
+      verification: "Verified",
       isAvailable: true,
     }).limit(5);
   }
@@ -182,6 +184,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
   randomRestaurants = await Restaurant.find({
     "coords.latitude": latitude,
     "coords.longitude": longitude,
+    verification: "Verified",
     isAvailable: true,
     ...filters,
   })
@@ -191,6 +194,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
   if (randomRestaurants.length === 0) {
     message = "No restaurants found in your location";
     randomRestaurants = await Restaurant.find({
+      verification: "Verified",
       isAvailable: true,
       ...filters,
     })
