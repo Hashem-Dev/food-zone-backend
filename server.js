@@ -18,6 +18,7 @@ const app = express();
 const usersRoutes = require("./routes/user");
 const adminRoutes = require("./routes/admin");
 const addressRoutes = require("./routes/address");
+const restaurantRoutes = require("./routes/restaurant");
 
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {
@@ -41,11 +42,14 @@ connectDB(() =>
 
 /** @Images */
 app.use(express.static(path.join(__dirname, "./uploads/avatars")));
+app.use(express.static(path.join(__dirname, "./uploads/restaurants/cover")));
+app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 
 /** @Mount routes */
 app.use(`${api}/admin`, adminRoutes);
 app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/address`, addressRoutes);
+app.use(`${api}/restaurant`, restaurantRoutes);
 
 /** @ErrorHandling */
 

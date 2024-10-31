@@ -15,7 +15,8 @@ const {
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
-  const { slug, name, email, password, adminAccessKey } = req.body;
+  const { slug, name, email, password, adminAccessKey, vendorAccessKey } =
+    req.body;
   let { isAdmin, role } = req.body;
   const existsUser = await User.findOne({ email });
   if (existsUser) {
@@ -30,6 +31,15 @@ const register = asyncHandler(async (req, res, next) => {
     ) {
       return next(
         new ApiErrors("Forbidden, you must provide admin access key", 403)
+      );
+    }
+  } else if (role === "vendor") {
+    if (
+      vendorAccessKey &&
+      !(vendorAccessKey === process.env.VENDOR_ACCESS_KEY)
+    ) {
+      return next(
+        new ApiErrors("Forbidden, you must provide vendor access key", 403)
       );
     }
   } else {

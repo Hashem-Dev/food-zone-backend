@@ -144,7 +144,33 @@ const verifyAdminToken = async (req, res, next) => {
   return next();
 };
 
+/**
+ * @desc Middleware to verify vendor token
+ */
+const verifyVendorToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers["Authorization"];
+  if (!authHeader) {
+    return next(
+      new ApiErrors("This request is not authorized, token is required", 401)
+    );
+  }
+  const token = authHeader.replace("Bearer ", "").trim();
+  const data = jwt.decode(token, tokenSecretKey);
+
+  const role = data.role;
+  if (!(role === "vendor")) {
+    return next(
+      new ApiErrors(
+        "You are not authenticated to access this vendor route",
+        403
+      )
+    );
+  }
+
+  return next();
+};
 module.exports = {
   verifyToken,
   verifyAdminToken,
+  verifyVendorToken,
 };

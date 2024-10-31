@@ -3,6 +3,7 @@ const User = require("../models/User");
 const ApiErrors = require("../utils/api-errors");
 const Address = require("../models/Address");
 const ApiFeatures = require("../utils/api-features");
+const ApiSuccess = require("../utils/api-success");
 
 /**
  * @desc Add new address for user
@@ -18,11 +19,6 @@ const addAddress = asyncHandler(async (req, res, next) => {
   const { country, city, street, apartment, location, additionalInfo } =
     req.body;
 
-  if (!location || !location.coordinates || location.coordinates.length !== 2) {
-    return res.status(400).json({
-      error: "Coordinates are required and must contain [longitude, latitude]",
-    });
-  }
   const newAddress = new Address({
     user,
     country,
@@ -88,6 +84,12 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors("This address not in your addresses list", 404));
   }
 
+  if (foundAddress.defaultAddress) {
+    return res
+      .status(200)
+      .json(new ApiSuccess("You already set this address as default"));
+  }
+
   const defaultAddress = await Address.updateMany(
     { user: foundAddress.user, defaultAddress: true },
     { $set: { defaultAddress: false } },
@@ -99,11 +101,9 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
   foundAddress.defaultAddress = true;
   await foundAddress.save();
 
-  return res.status(200).json({
-    status: "Success",
-    message: "This address set as default location",
-    foundAddress,
-  });
+  return res
+    .status(200)
+    .json(new ApiSuccess("This address set as default location"));
 });
 
 /**
@@ -133,7 +133,7 @@ const deleteAddress = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors("Failed to update address", 400));
   }
 
-  return res.status(200).json({ updateUser });
+  return res.status(200).json(new ApiSuccess("Address deleted successfully"));
 });
 
 /**
@@ -141,7 +141,6 @@ const deleteAddress = asyncHandler(async (req, res, next) => {
  * @route PATCH /api/v1/address/:id
  * @access protected
  */
-
 const updateAddress = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const addressId = req.params.id;
@@ -151,17 +150,17 @@ const updateAddress = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiErrors("User not found", 404));
   }
+
   const updatedAddress = await Address.findByIdAndUpdate(
     { _id: addressId, user: user },
     { country, city, street, apartment, additionalInfo },
     { new: true }
   );
+
   if (!updatedAddress) {
     return next(new ApiErrors("Failed with update this address", 404));
   }
-  return res
-    .status(200)
-    .json({ status: "Success", message: "Address updated successfully" });
+  return res.status(200).json(new ApiSuccess("Address updated successfully"));
 });
 
 /**
