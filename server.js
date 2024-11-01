@@ -19,7 +19,9 @@ const usersRoutes = require("./routes/user");
 const adminRoutes = require("./routes/admin");
 const addressRoutes = require("./routes/address");
 const restaurantRoutes = require("./routes/restaurant");
+const categoryRoutes = require("./routes/category");
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -42,6 +44,7 @@ connectDB(() =>
 
 /** @Images */
 app.use(express.static(path.join(__dirname, "./uploads/avatars")));
+app.use(express.static(path.join(__dirname, "./uploads/category/")));
 app.use(express.static(path.join(__dirname, "./uploads/restaurants/cover")));
 app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 
@@ -50,6 +53,7 @@ app.use(`${api}/admin`, adminRoutes);
 app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/address`, addressRoutes);
 app.use(`${api}/restaurant`, restaurantRoutes);
+app.use(`${api}/category`, categoryRoutes);
 
 /** @ErrorHandling */
 

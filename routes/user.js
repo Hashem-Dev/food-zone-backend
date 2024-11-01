@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../services/uploader/avatar-uploader");
+const upload = require("../services/uploader/user-avatar-uploader");
 /** @endpoints */
 const {
   register,

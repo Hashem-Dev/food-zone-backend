@@ -12,6 +12,11 @@ const {
   verifyVendorToken,
 } = require("../middlewares/verify-token");
 const upload = require("../services/uploader/restaurant-uploader");
+const {
+  addRestaurantValidator,
+  restaurantIdValidator,
+  restaurantRatingValidator,
+} = require("../services/validators/restaurant");
 
 const router = express.Router();
 
@@ -25,11 +30,15 @@ router
       { name: "logo", maxCount: 1 },
       { name: "cover", maxCount: 1 },
     ]),
+    addRestaurantValidator,
     addRestaurant
   )
   .get(verifyVendorToken, getRestaurantVendor);
 
-router.route("/id/:id").get(getRestaurantById).patch(addRestaurantRating);
+router
+  .route("/id/:id")
+  .get(restaurantIdValidator, getRestaurantById)
+  .patch(restaurantRatingValidator, addRestaurantRating);
 
 router.route("/random").get(getRandomNearByRestaurants);
 router.route("/all").get(allNearbyRestaurants);

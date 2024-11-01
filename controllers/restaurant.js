@@ -28,6 +28,9 @@ const addRestaurant = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiErrors("User not found", 404));
   }
+  if (!req.files.cover || !req.files.logo) {
+    return next(new ApiErrors("logo or cover is missing", 400));
+  }
 
   const { title, time, coords } = req.body;
   const cover = req.files.cover[0].filename;
