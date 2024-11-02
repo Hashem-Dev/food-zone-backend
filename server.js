@@ -9,7 +9,6 @@ const connectDB = require("./config/database-config");
 const locale = require("./config/locale-config");
 const globalErrors = require("./services/global-errors");
 const ApiErrors = require("./utils/api-errors");
-const bodyParser = require("body-parser");
 
 const port = process.env.PORT || 5000;
 const api = process.env.API;
@@ -24,12 +23,11 @@ const restaurantRoutes = require("./routes/restaurant");
 const mealRoutes = require("./routes/meal");
 
 app.use(express.json());
+app.use(cors);
 
-// app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
-app.use(cors);
 
 /** @language */
 app.use(locale.localization);
