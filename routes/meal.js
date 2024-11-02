@@ -1,13 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const uploadMealImages = require("../services/uploader/meal-images-uploader");
-const { addMealValidation } = require("../services/validators/meal");
+const {
+  addMealValidation,
+  categoryMealValidator,
+  restaurantMealValidator,
+  addMealRatingValidator,
+  specificMealsValidator,
+} = require("../services/validators/meal");
 const {
   addMeal,
   getCategoryMeals,
   getRestaurantMeals,
   getSpecificMeal,
   getRandomMeals,
+  addMealRating,
 } = require("../controllers/meal");
 
 const {
@@ -26,9 +33,17 @@ router
   )
   .get(getRandomMeals);
 
-router.route("/category/:category").get(getCategoryMeals);
-router.route("/restaurant/:restaurant").get(getRestaurantMeals);
+router
+  .route("/category/:category")
+  .get(categoryMealValidator, getCategoryMeals);
 
-router.route("/:id").get(getSpecificMeal);
+router
+  .route("/restaurant/:restaurant")
+  .get(restaurantMealValidator, getRestaurantMeals);
+
+router
+  .route("/:id")
+  .get(specificMealsValidator, getSpecificMeal)
+  .patch(verifyToken, addMealRatingValidator, addMealRating);
 
 module.exports = router;

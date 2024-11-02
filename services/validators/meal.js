@@ -182,6 +182,8 @@ const imagesValidator = (images, optional = false) => {
   return validator;
 };
 
+const specificMealsValidator = [idValidator("id"), validationMiddleware];
+
 const addMealValidation = [
   titleValidator("title"),
   timeValidator("time"),
@@ -197,6 +199,27 @@ const addMealValidation = [
   validationMiddleware,
 ];
 
+const categoryMealValidator = [idValidator("category"), validationMiddleware];
+
+const restaurantMealValidator = [
+  idValidator("restaurant"),
+  validationMiddleware,
+];
+
+const addMealRatingValidator = [
+  idValidator("id"),
+  check("userRating")
+    .notEmpty()
+    .withMessage("User rating is required")
+    .isNumeric()
+    .withMessage("User rating must be number between 1 and 5"),
+  validationMiddleware,
+];
+
 module.exports = {
   addMealValidation,
+  categoryMealValidator,
+  restaurantMealValidator,
+  addMealRatingValidator,
+  specificMealsValidator,
 };

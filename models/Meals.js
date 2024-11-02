@@ -17,7 +17,7 @@ const mealSchema = new Schema(
       ref: "Restaurant",
       required: true,
     },
-    rating: { type: Number, min: 1, max: 5, default: 2 },
+    rating: { type: Number, min: 0, max: 5, default: 1 },
     ratingCount: { type: String, default: "10" },
     description: { type: String, required: true },
     price: { type: Number, required: true },

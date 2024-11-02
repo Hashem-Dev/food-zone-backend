@@ -1,8 +1,10 @@
 const asyncHandler = require("express-async-handler");
 const Category = require("../models/Category");
-const ApiErrors = require("../utils/api-errors");
 const Restaurant = require("../models/Restaurant");
 const Meal = require("../models/Meals");
+const User = require("../models/User");
+const Rating = require("../models/Rating");
+const ApiErrors = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
 
 /**
@@ -197,10 +199,77 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
     .json(new ApiSuccess("Meals", { page, message, meals }));
 });
 
+/**
+ * @desc Add meal rating
+ * @route PATCH /api/v1/meal/:id
+ * @access protected
+ */
+const addMealRating = asyncHandler(async (req, res, next) => {
+  /**@user */
+  const user = req.user;
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found", 404));
+  }
+
+  /**@meal */
+  const meal = req.params.id;
+  const foundMeal = await Meal.findById(meal);
+  if (!foundMeal) {
+    return next(new ApiErrors("No meal found", 404));
+  }
+
+  const ratedUser = await Rating.findOne({
+    user,
+    product: foundMeal._id,
+  });
+
+  if (ratedUser) {
+    return next(new ApiErrors("You have already rated this meal", 400));
+  }
+
+  const { userRating } = req.body;
+
+  const ratingCount = +foundMeal.ratingCount + 1;
+  let rating =
+    (+foundMeal.rating * +foundMeal.ratingCount + userRating) / ratingCount;
+  console.log(rating);
+  rating = parseFloat(rating.toFixed(3));
+
+  foundMeal.rating = +rating;
+  foundMeal.ratingCount = +ratingCount;
+
+  await foundMeal.save();
+
+  const ratedMeal = await Rating.create({
+    user,
+    ratingType: "Meal",
+    product: foundMeal._id,
+  });
+
+  if (!ratedMeal) {
+    return next(new ApiErrors("Failed to rate this meal", 400));
+  }
+  return res
+    .status(200)
+    .json(new ApiSuccess("Rating add successfully", ratedMeal));
+});
+
+/**
+ * @desc Delete a specific meal
+ * @route DELETE /api/v1/meal/:id
+ * @access protected
+ */
+const deleteSpecificMeal = asyncHandler(async (req, res, next) => {
+  const meal = req.params.id;
+  const foundMeal = await Meal.findById(meal);
+});
+
 module.exports = {
   addMeal,
   getCategoryMeals,
   getRestaurantMeals,
   getSpecificMeal,
   getRandomMeals,
+  addMealRating,
 };

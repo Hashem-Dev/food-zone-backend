@@ -10,7 +10,7 @@ const restaurantsSchema = new Schema({
   isAvailable: { type: Boolean, default: true },
   owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
   logo: { type: String, required: true },
-  rating: { type: Number, min: 1, max: 5, default: 1.5 },
+  rating: { type: Number, min: 0, max: 5, default: 1 },
   ratingCount: { type: String, default: "10" },
   verification: {
     type: String,
