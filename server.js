@@ -51,7 +51,7 @@ app.use(express.static(path.join(__dirname, "./uploads/restaurants/cover")));
 app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 
 /** @Mount routes */
-app.get("/", (req, res) => {
+app.use("/", (req, res) => {
   return res.status(200).json("Welcooooooooooooooooooome");
 });
 app.use(`${api}/admin`, adminRoutes);
