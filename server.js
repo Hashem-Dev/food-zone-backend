@@ -10,7 +10,7 @@ const locale = require("./config/locale-config");
 const globalErrors = require("./services/global-errors");
 const ApiErrors = require("./utils/api-errors");
 
-const port = 3344;
+const port = process.env.PORT || 5000;
 const api = process.env.API;
 const app = express();
 
@@ -37,7 +37,6 @@ app.use(locale.serverLanguage);
 connectDB(() =>
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
-    console.log(api);
     if (process.env.NODE_ENV === "development") {
       console.log("Development mode");
     }
@@ -52,9 +51,8 @@ app.use(express.static(path.join(__dirname, "./uploads/restaurants/cover")));
 app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 
 /** @Mount routes */
-
-app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/users", usersRoutes);
+app.use(`${api}/admin`, adminRoutes);
+app.use(`${api}/users`, usersRoutes);
 app.use(`${api}/address`, addressRoutes);
 app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
