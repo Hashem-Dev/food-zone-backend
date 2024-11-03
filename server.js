@@ -57,6 +57,9 @@ app.use(`${api}/address`, addressRoutes);
 app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
 app.use(`${api}/meal`, mealRoutes);
+app.get("/", (req, res) => {
+  return res.status(200).json("Welcooooooooooooooooooome");
+});
 
 /** @ErrorHandling */
 
