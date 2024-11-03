@@ -2,6 +2,9 @@
   "name": "food_zone",
   "version": "1.0.0",
   "main": "server.js",
+  "engines": {
+    "node": "20.xx"
+  },
   "scripts": {
     "start": "nodemon server.js",
     "prod": "cross-env NODE_ENV=production nodemon server.js"
