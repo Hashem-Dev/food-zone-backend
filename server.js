@@ -37,6 +37,7 @@ app.use(locale.serverLanguage);
 connectDB(() =>
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    console.log(api);
     if (process.env.NODE_ENV === "development") {
       console.log("Development mode");
     }
