@@ -10,7 +10,7 @@ const locale = require("./config/locale-config");
 const globalErrors = require("./services/global-errors");
 const ApiErrors = require("./utils/api-errors");
 
-const port = process.env.PORT || 5000;
+const port = 3344;
 const api = process.env.API;
 const app = express();
 
