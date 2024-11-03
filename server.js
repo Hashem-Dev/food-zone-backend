@@ -55,8 +55,8 @@ app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 app.use("/", (req, res) => {
   return res.status(200).json("Welcooooooooooooooooooome");
 });
-app.use(`${api}/admin`, adminRoutes);
-app.use(`${api}/users`, usersRoutes);
+app.use(`/api/v1/admin`, adminRoutes);
+app.use(`/api/v1/users`, usersRoutes);
 app.use(`${api}/address`, addressRoutes);
 app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
