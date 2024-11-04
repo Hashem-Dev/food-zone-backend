@@ -7,6 +7,7 @@ const Rating = require("../models/Rating");
 const ApiErrors = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
 const ApiFeatures = require("../utils/api-features");
+const { uploadRestaurantImages } = require("../services/uploader/cloudinary");
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -33,8 +34,18 @@ const addRestaurant = asyncHandler(async (req, res, next) => {
   }
 
   const { title, time, coords } = req.body;
-  const cover = req.files.cover[0].filename;
-  const logo = req.files.logo[0].filename;
+
+  const cover = await uploadRestaurantImages(
+    req.files.cover[0],
+    "Restaurant",
+    "covers/cover"
+  );
+  const logo = await uploadRestaurantImages(
+    req.files.logo[0],
+    "Restaurant",
+    "logos/logo"
+  );
+  console.log(cover, logo);
 
   const newRestaurant = await Restaurant.create({
     owner: user,

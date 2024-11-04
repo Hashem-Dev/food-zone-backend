@@ -62,7 +62,26 @@ const uploadIcon = async (file, folder, prefix) => {
   });
 };
 
+const uploadRestaurantImages = async (file, folder, publicId) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        public_id: publicId,
+        folder: folder,
+        transformation: [{ quality: "auto", fetch_format: "auto" }],
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+
+    stream.end(file.buffer);
+  });
+};
+
 module.exports = {
   uploadAvatar,
   uploadIcon,
+  uploadRestaurantImages,
 };

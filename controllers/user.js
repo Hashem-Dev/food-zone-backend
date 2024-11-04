@@ -16,8 +16,6 @@ const { uploadAvatar } = require("../services/uploader/cloudinary");
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
-  console.log(process.env.VENDOR_ACCESS_KEY);
-
   const { slug, name, email, password, adminAccessKey, vendorAccessKey } =
     req.body;
   let { isAdmin, role } = req.body;
@@ -50,6 +48,7 @@ const register = asyncHandler(async (req, res, next) => {
         )
       );
     }
+    isAdmin = false;
   } else {
     role = "user";
     isAdmin = false;

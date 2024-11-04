@@ -11,7 +11,9 @@ const {
   verifyToken,
   verifyVendorToken,
 } = require("../middlewares/verify-token");
-const upload = require("../services/uploader/restaurant-uploader");
+
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 const {
   addRestaurantValidator,
   restaurantIdValidator,
@@ -25,6 +27,7 @@ router.use(verifyToken);
 router
   .route("/")
   .post(
+    verifyToken,
     verifyVendorToken,
     upload.fields([
       { name: "logo", maxCount: 1 },

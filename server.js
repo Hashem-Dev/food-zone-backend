@@ -43,12 +43,7 @@ connectDB(() =>
   })
 );
 
-/** @Images */
-app.use(express.static(path.join(__dirname, "./uploads/avatars")));
-app.use(express.static(path.join(__dirname, "./uploads/category/")));
 app.use(express.static(path.join(__dirname, "./uploads/meals/")));
-app.use(express.static(path.join(__dirname, "./uploads/restaurants/cover")));
-app.use(express.static(path.join(__dirname, "./uploads/restaurants/logo")));
 
 /** @Mount routes */
 app.use(`${api}/admin`, adminRoutes);
