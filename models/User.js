@@ -32,7 +32,10 @@ const userSchema = new Schema(
       required: [true, "Password is required"],
       minLength: 8,
     },
-    avatar: { type: String, default: "avatar.png" },
+    avatar: {
+      url: { type: String, required: [true, "Avatar url required"] },
+      publicId: { type: String, required: [true, "Avatar public id required"] },
+    },
     phone: { type: Number, default: "0981534952" },
     phoneVerification: { type: Boolean, default: false },
     passwordOtp: { type: Number, default: 0 },

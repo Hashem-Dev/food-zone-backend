@@ -8,6 +8,7 @@ const {
   accessTokenGenerator,
   refreshTokenGenerator,
 } = require("../utils/token-generator");
+const { uploadAvatar } = require("../services/uploader/cloudinary");
 
 /**
  * @desc Creates a new user account
@@ -324,16 +325,16 @@ const updateUser = asyncHandler(async (req, res, next) => {
 const uploadUserAvatar = asyncHandler(async (req, res, next) => {
   const userId = req.user;
   const user = await User.findById(userId);
-
+  const uploadImage = await uploadAvatar(req.file, "Avatar", "avatar");
+  console.log(uploadImage);
   if (!user) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
-  user.avatar = req.file.filename;
+  user.avatar.url = uploadImage.url;
+  user.avatar.publicId = uploadImage.publicId;
   await user.save();
 
-  return res
-    .status(200)
-    .json({ status: "Success", message: req.__("profile_image_added") });
+  return res.status(200).json({ status: "Success", user });
 });
 
 /**

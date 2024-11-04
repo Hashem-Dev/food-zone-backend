@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../services/uploader/user-avatar-uploader");
+
 /** @endpoints */
 const {
   register,
@@ -30,6 +30,8 @@ const {
   verifyToken,
   verifyAdminToken,
 } = require("../middlewares/verify-token");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 router
   .route("/")

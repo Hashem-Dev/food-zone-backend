@@ -21,7 +21,6 @@ const addressRoutes = require("./routes/address");
 const categoryRoutes = require("./routes/category");
 const restaurantRoutes = require("./routes/restaurant");
 const mealRoutes = require("./routes/meal");
-const uploadRouter = require("./services/uploader/cloudinary");
 
 app.use(express.json());
 app.use(cors);
@@ -58,7 +57,6 @@ app.use(`${api}/address`, addressRoutes);
 app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
 app.use(`${api}/meal`, mealRoutes);
-app.use(`${api}/`, uploadRouter);
 
 /** @ErrorHandling */
 

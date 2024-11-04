@@ -1,7 +1,6 @@
 const express = require("express");
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
-const fs = require("fs");
 const router = express.Router();
 
 // Configure Cloudinary with your account details
@@ -11,27 +10,32 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Set up multer to temporarily store files
-const upload = multer({ storage: multer.memoryStorage() });
+/**
+ * @desc Upload user avatar by cloudinary
+ * @param {*} file
+ * @param {*} folder
+ * @param {*} prefix
+ */
+const uploadAvatar = async (file, folder, prefix) => {
+  return new Promise((resolve, reject) => {
+    const publicId = `${prefix}_${Date.now()}`;
 
-// Endpoint for image upload
-router.post("/upload", upload.single("image"), async (req, res) => {
-  try {
-    const result = await cloudinary.uploader.upload_stream(
-      { folder: "random" }, // Specify folder on Cloudinary
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        public_id: publicId,
+        folder: folder,
+        transformation: [{ quality: "auto", fetch_format: "auto" }],
+      },
       (error, result) => {
-        if (error) {
-          return res.status(500).json({ error: "Error uploading image" });
-        }
-        res.json({ imageUrl: result.url });
+        if (error) return reject(error);
+        resolve({ url: result.secure_url, publicId: result.public_id });
       }
     );
 
-    // Pass the file buffer to Cloudinary's upload stream
-    result.end(req.file.buffer);
-  } catch (error) {
-    res.status(500).json({ error: "Error uploading image" });
-  }
-});
+    stream.end(file.buffer);
+  });
+};
 
-module.exports = router;
+module.exports = {
+  uploadAvatar,
+};
