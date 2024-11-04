@@ -16,6 +16,8 @@ const { uploadAvatar } = require("../services/uploader/cloudinary");
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
+  console.log(process.env.VENDOR_ACCESS_KEY);
+
   const { slug, name, email, password, adminAccessKey, vendorAccessKey } =
     req.body;
   let { isAdmin, role } = req.body;
@@ -24,23 +26,28 @@ const register = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("email_exists"), 409));
   }
 
-  if (isAdmin) {
-    if (
-      role === "admin" &&
-      adminAccessKey &&
-      !(adminAccessKey === process.env.ADMIN_ACCESS_KEY)
-    ) {
+  if (role === "admin") {
+    if (isAdmin) {
+      if (!adminAccessKey || adminAccessKey !== process.env.ADMIN_ACCESS_KEY) {
+        return next(
+          new ApiErrors(
+            "Forbidden, you must provide a valid admin access key",
+            403
+          )
+        );
+      }
+    } else {
       return next(
-        new ApiErrors("Forbidden, you must provide admin access key", 403)
+        new ApiErrors("Forbidden, you cannot register as admin", 403)
       );
     }
   } else if (role === "vendor") {
-    if (
-      vendorAccessKey &&
-      !(vendorAccessKey === process.env.VENDOR_ACCESS_KEY)
-    ) {
+    if (!vendorAccessKey || vendorAccessKey !== process.env.VENDOR_ACCESS_KEY) {
       return next(
-        new ApiErrors("Forbidden, you must provide vendor access key", 403)
+        new ApiErrors(
+          "Forbidden, you must provide a valid vendor access key",
+          403
+        )
       );
     }
   } else {
@@ -298,15 +305,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const updatedUser = await User.findByIdAndUpdate(
     { _id: userId },
-    {
-      $set: {
-        name,
-        slug,
-        email,
-        password,
-        phone,
-      },
-    },
+    { $set: { name, slug, email, password, phone } },
     { new: true, context: { req: req } }
   );
 
@@ -334,7 +333,9 @@ const uploadUserAvatar = asyncHandler(async (req, res, next) => {
   user.avatar.publicId = uploadImage.publicId;
   await user.save();
 
-  return res.status(200).json({ status: "Success", user });
+  return res
+    .status(200)
+    .json({ status: "Success", message: req.__("profile_image_added") });
 });
 
 /**

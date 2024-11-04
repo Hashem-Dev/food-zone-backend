@@ -12,18 +12,21 @@ const {
   verifyToken,
   verifyAdminToken,
 } = require("../middlewares/verify-token");
-const uploadCategoryIcon = require("../services/uploader/category-icon-uploader");
+
 const {
   createCategoryValidator,
   updateCategoryValidator,
 } = require("../services/validators/category");
+
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 router
   .route("/")
   .post(
     verifyToken,
     verifyAdminToken,
-    uploadCategoryIcon.single("icon"),
+    upload.single("icon"),
     createCategoryValidator,
     createCategory
   )
@@ -35,7 +38,7 @@ router
   .patch(
     verifyToken,
     verifyAdminToken,
-    uploadCategoryIcon.single("icon"),
+    upload.single("icon"),
     updateCategoryValidator,
     updateCategory
   );

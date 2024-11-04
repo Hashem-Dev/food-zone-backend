@@ -26,10 +26,7 @@ const {
   resetPasswordValidator,
   updateUserValidator,
 } = require("../services/validators/user");
-const {
-  verifyToken,
-  verifyAdminToken,
-} = require("../middlewares/verify-token");
+const { verifyToken } = require("../middlewares/verify-token");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 

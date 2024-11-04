@@ -6,6 +6,7 @@ const User = require("../models/User");
 const Category = require("../models/Category");
 const ApiError = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
+const { uploadIcon } = require("../services/uploader/cloudinary");
 
 /**
  * @desc Create category
@@ -15,7 +16,6 @@ const ApiSuccess = require("../utils/api-success");
 const createCategory = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const { title } = req.body;
-  const icon = req.file.filename;
   const slug = slugify(title);
   const value = title;
 
@@ -23,13 +23,12 @@ const createCategory = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiError("User not found", 404));
   }
+  const categoryIcon = await uploadIcon(req.file, "Category", "category");
+  console.log(categoryIcon);
 
-  const newCategory = await Category.create({
-    title,
-    value,
-    slug,
-    icon,
-  });
+  const icon = categoryIcon;
+
+  const newCategory = await Category.create({ title, value, slug, icon });
 
   if (!newCategory) {
     return next(new ApiError("Failed with create new category", 400));
