@@ -27,7 +27,7 @@ const addMeal = asyncHandler(async (req, res, next) => {
   } = req.body;
 
   const uploadImages = req.files.map((image, index) => {
-    const folder = `Meal/${slugify(title)}`;
+    const folder = `Meal/${slugify(title).toLowerCase()}`;
     const prefix = `meal-${index}`;
     return uploadImage(image, folder, prefix);
   });
