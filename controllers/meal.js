@@ -6,6 +6,8 @@ const User = require("../models/User");
 const Rating = require("../models/Rating");
 const ApiErrors = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
+const { uploadImage } = require("../services/uploader/cloudinary");
+const { default: slugify } = require("slugify");
 
 /**
  * @desc Add new meal
@@ -23,7 +25,14 @@ const addMeal = asyncHandler(async (req, res, next) => {
     price,
     additives,
   } = req.body;
-  const images = req.images;
+
+  const uploadImages = req.files.map((image, index) => {
+    const folder = `Meal/${slugify(title)}`;
+    const prefix = `meal-${index}`;
+    return uploadImage(image, folder, prefix);
+  });
+
+  const images = await Promise.all(uploadImages);
   const foodType = req.foodType;
   const foodTags = req.foodTags;
   /** @category */
@@ -87,7 +96,7 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
 
   /** @meals */
   const meals = await Meal.aggregate([
-    { $match: { category: category } },
+    { $match: { category: foundCategory._id } },
     { $sample: { size: 5 } },
   ]);
 

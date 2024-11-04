@@ -16,7 +16,7 @@ cloudinary.config({
  * @param {*} folder
  * @param {*} prefix
  */
-const uploadAvatar = async (file, folder, prefix) => {
+const uploadImage = async (file, folder, prefix) => {
   return new Promise((resolve, reject) => {
     const publicId = `${prefix}_${Date.now()}`;
 
@@ -36,52 +36,6 @@ const uploadAvatar = async (file, folder, prefix) => {
   });
 };
 
-/**
- * @desc Upload category icon by cloudinary
- * @param {*} file
- * @param {*} folder
- * @param {*} prefix
- */
-const uploadIcon = async (file, folder, prefix) => {
-  return new Promise((resolve, reject) => {
-    const publicId = `${prefix}_${Date.now()}`;
-
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        public_id: publicId,
-        folder: folder,
-        transformation: [{ quality: "auto", fetch_format: "auto" }],
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result.secure_url);
-      }
-    );
-
-    stream.end(file.buffer);
-  });
-};
-
-const uploadRestaurantImages = async (file, folder, publicId) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        public_id: publicId,
-        folder: folder,
-        transformation: [{ quality: "auto", fetch_format: "auto" }],
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result.secure_url);
-      }
-    );
-
-    stream.end(file.buffer);
-  });
-};
-
 module.exports = {
-  uploadAvatar,
-  uploadIcon,
-  uploadRestaurantImages,
+  uploadImage,
 };

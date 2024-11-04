@@ -6,7 +6,7 @@ const User = require("../models/User");
 const Category = require("../models/Category");
 const ApiError = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
-const { uploadIcon } = require("../services/uploader/cloudinary");
+const { uploadImage } = require("../services/uploader/cloudinary");
 
 /**
  * @desc Create category
@@ -23,11 +23,8 @@ const createCategory = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiError("User not found", 404));
   }
-  const categoryIcon = await uploadIcon(req.file, "Category", "category");
-  console.log(categoryIcon);
-
-  const icon = categoryIcon;
-
+  const categoryIcon = await uploadImage(req.file, "Category", "category");
+  const icon = categoryIcon.url;
   const newCategory = await Category.create({ title, value, slug, icon });
 
   if (!newCategory) {
@@ -95,6 +92,11 @@ const updateCategory = asyncHandler(async (req, res, next) => {
 
   let value, slug, icon;
 
+  if (req.file) {
+    const categoryIcon = await uploadImage(req.file, "Category", "category");
+
+    icon = categoryIcon.url;
+  }
   if (title) {
     value = title;
     slug = slugify(title);
@@ -105,23 +107,6 @@ const updateCategory = asyncHandler(async (req, res, next) => {
     { title, value, slug, icon },
     { new: true }
   );
-
-  const oldCategory = await Category.findById(category);
-  if (req.file) {
-    if (oldCategory.icon) {
-      fs.unlink(
-        path.join(__dirname, `../uploads/category/${oldCategory.icon}`),
-        (error) => {
-          if (error) {
-            return next(new ApiError(error.message));
-          }
-        }
-      );
-    }
-    icon = req.file.filename;
-    oldCategory.icon = icon;
-    oldCategory.save();
-  }
 
   if (!updatedCategory) {
     return next(new ApiError("Category not found", 404));

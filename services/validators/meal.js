@@ -165,13 +165,13 @@ const imagesValidator = (images, optional = false) => {
   }
 
   validator.custom((value, { req }) => {
-    if (!req.files.images) {
+    if (!req.files) {
       throw new ApiErrors("You must at least one image");
     }
 
     let images = [];
 
-    req.files.images.forEach((file) => {
+    req.files.forEach((file) => {
       images.push(file.filename);
     });
 

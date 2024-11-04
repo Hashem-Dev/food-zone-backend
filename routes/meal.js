@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const uploadMealImages = require("../services/uploader/meal-images-uploader");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 const {
   addMealValidation,
   categoryMealValidator,
@@ -27,7 +28,7 @@ router
   .post(
     verifyToken,
     verifyAdminToken,
-    uploadMealImages.fields([{ name: "images", maxCount: 5 }]),
+    upload.array("images", 5),
     addMealValidation,
     addMeal
   )
