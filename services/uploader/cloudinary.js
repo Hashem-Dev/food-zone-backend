@@ -12,21 +12,23 @@ cloudinary.config({
 });
 
 // Set up multer to temporarily store files
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Endpoint for image upload
 router.post("/upload", upload.single("image"), async (req, res) => {
   try {
-    // Upload the image to Cloudinary using the temporary file path
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "random", // Specify folder on Cloudinary
-    });
+    const result = await cloudinary.uploader.upload_stream(
+      { folder: "random" }, // Specify folder on Cloudinary
+      (error, result) => {
+        if (error) {
+          return res.status(500).json({ error: "Error uploading image" });
+        }
+        res.json({ imageUrl: result.url });
+      }
+    );
 
-    // Delete the temporary file after upload
-    fs.unlinkSync(req.file.path);
-
-    // Send the image URL as a response
-    res.json({ imageUrl: result.url });
+    // Pass the file buffer to Cloudinary's upload stream
+    result.end(req.file.buffer);
   } catch (error) {
     res.status(500).json({ error: "Error uploading image" });
   }
