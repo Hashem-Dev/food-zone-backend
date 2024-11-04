@@ -33,8 +33,8 @@ const userSchema = new Schema(
       minLength: 8,
     },
     avatar: {
-      url: { type: String, required: [true, "Avatar url required"] },
-      publicId: { type: String, required: [true, "Avatar public id required"] },
+      url: { type: String },
+      publicId: { type: String },
     },
     phone: { type: Number, default: "0981534952" },
     phoneVerification: { type: Boolean, default: false },
