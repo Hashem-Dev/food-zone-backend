@@ -21,7 +21,7 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
   });
 
   if (!allUsers) {
-    return next(new ApiErrors("Users not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   return res.status(200).json({ paginationResults, users: allUsers });
 });
@@ -37,16 +37,14 @@ const deleteUser = asyncHandler(async (req, res, next) => {
 
   const user = await User.findById(id);
   if (!user) {
-    return next(new ApiErrors("This user is not exist", 404));
+    return next(new ApiErrors(req.__("user_not_exists"), 404));
   }
   if (user.isAdmin) {
-    return next(
-      new ApiErrors("You are not allowed to delete admin account", 403)
-    );
+    return next(new ApiErrors(req.__("delete_admin"), 403));
   }
   const deletedUser = await User.findByIdAndDelete(id);
   if (!deletedUser) {
-    return next(new ApiErrors("Failed to delete this user with ID:" + id, 400));
+    return next(new ApiErrors(req.__("user_delete_fail") + id, 400));
   }
 
   return res.status(204).end();

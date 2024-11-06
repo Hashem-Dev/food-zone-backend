@@ -32,7 +32,7 @@ const timeValidator = (time, optional = false) => {
     .trim()
     .notEmpty()
     .withMessage("Time required")
-    .isLength({ min: 2, max: 7 })
+    .isLength({ min: 2, max: 12 })
     .withMessage("Time must be between 2-7 character.");
 
   return validator;
@@ -50,12 +50,13 @@ const foodTagsValidator = (tags, optional = false) => {
       throw new ApiErrors("Food tags required");
     }
 
-    const tags = value.split(",");
-    if (tags.length < 1) {
+    const values = value.split(",");
+    if (values.length < 1) {
       throw new ApiErrors("Food tags array must be at least 1 tag");
     }
 
-    req.foodTags = tags;
+    req.tags = values;
+
     return true;
   });
 
@@ -185,15 +186,19 @@ const imagesValidator = (images, optional = false) => {
 const specificMealsValidator = [idValidator("id"), validationMiddleware];
 
 const addMealValidation = [
-  titleValidator("title"),
+  titleValidator("title.en"),
+  titleValidator("title.ar"),
   timeValidator("time"),
-  foodTagsValidator("foodTags"),
-  foodTypesValidator("foodType"),
+  foodTagsValidator("foodTags.en"),
+  foodTagsValidator("foodTags.ar"),
+  foodTypesValidator("foodType.en"),
+  foodTypesValidator("foodType.ar"),
   latitudeValidator("coords.latitude"),
   longitudeValidator("coords.longitude"),
   idValidator("category"),
   idValidator("restaurant"),
-  descriptionValidator("description"),
+  descriptionValidator("description.ar"),
+  descriptionValidator("description.en"),
   priceValidator("price"),
   imagesValidator("images"),
   validationMiddleware,

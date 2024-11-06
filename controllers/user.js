@@ -27,26 +27,14 @@ const register = asyncHandler(async (req, res, next) => {
   if (role === "admin") {
     if (isAdmin) {
       if (!adminAccessKey || adminAccessKey !== process.env.ADMIN_ACCESS_KEY) {
-        return next(
-          new ApiErrors(
-            "Forbidden, you must provide a valid admin access key",
-            403
-          )
-        );
+        return next(new ApiErrors(req.__("invalid_admin_access_key"), 403));
       }
     } else {
-      return next(
-        new ApiErrors("Forbidden, you cannot register as admin", 403)
-      );
+      return next(new ApiErrors(req.__("admin_register_forbidden"), 403));
     }
   } else if (role === "vendor") {
     if (!vendorAccessKey || vendorAccessKey !== process.env.VENDOR_ACCESS_KEY) {
-      return next(
-        new ApiErrors(
-          "Forbidden, you must provide a valid vendor access key",
-          403
-        )
-      );
+      return next(new ApiErrors(req.__("invalid_vendor_access_key"), 403));
     }
     isAdmin = false;
   } else {

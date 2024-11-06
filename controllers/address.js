@@ -14,7 +14,7 @@ const addAddress = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   const { country, city, street, apartment, location, additionalInfo } =
     req.body;
@@ -33,13 +33,12 @@ const addAddress = asyncHandler(async (req, res, next) => {
   foundUser.save();
 
   if (!newAddress) {
-    return next(new ApiErrors("Failed with add new address", 400));
+    return next(new ApiErrors(req.__("new_address_failed"), 400));
   }
-  return res.status(201).json({
-    status: "Success",
-    address: newAddress,
-    message: "New address add to your list",
-  });
+
+  return res
+    .status(201)
+    .json(new ApiSuccess(req.__("new_address_success"), newAddress));
 });
 
 /**
@@ -51,7 +50,7 @@ const getAllAddress = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   const countDocument = await Address.countDocuments();
   const features = new ApiFeatures(Address.find({ user }), req.query);
@@ -61,7 +60,7 @@ const getAllAddress = asyncHandler(async (req, res, next) => {
   const result = await mongooseQuery;
 
   if (!result) {
-    return next(new ApiErrors("You do not have any address yet", 404));
+    return next(new ApiErrors(req.__("no_address_set"), 404));
   }
   return res.status(200).json({ paginationResults, result });
 });
@@ -76,18 +75,18 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
   const addressId = req.params.id;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const foundAddress = await Address.findById(addressId);
   if (!foundAddress) {
-    return next(new ApiErrors("This address not in your addresses list", 404));
+    return next(new ApiErrors(req.__("no_address_in_list"), 404));
   }
 
   if (foundAddress.defaultAddress) {
     return res
       .status(200)
-      .json(new ApiSuccess("You already set this address as default"));
+      .json(new ApiSuccess(req.__("address_already_default")));
   }
 
   const defaultAddress = await Address.updateMany(
@@ -96,14 +95,14 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
     { new: true }
   );
   if (!defaultAddress) {
-    return next(new ApiErrors("Failed to set default address", 404));
+    return next(new ApiErrors(req.__("address_default_failed"), 404));
   }
   foundAddress.defaultAddress = true;
   await foundAddress.save();
 
   return res
     .status(200)
-    .json(new ApiSuccess("This address set as default location"));
+    .json(new ApiSuccess(req.__("address_default_success")));
 });
 
 /**
@@ -116,11 +115,11 @@ const deleteAddress = asyncHandler(async (req, res, next) => {
   const addressId = req.params.id;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   const foundAddress = await Address.findById(addressId);
   if (!foundAddress) {
-    return next(new ApiErrors("This address not found", 404));
+    return next(new ApiErrors(req.__("address_not_found"), 404));
   }
 
   const updateUser = await User.findByIdAndUpdate(
@@ -130,10 +129,10 @@ const deleteAddress = asyncHandler(async (req, res, next) => {
   );
   const deletedAddress = await Address.findByIdAndDelete(addressId);
   if (!updateUser || !deletedAddress) {
-    return next(new ApiErrors("Failed to update address", 400));
+    return next(new ApiErrors(req.__("address_delete_failed"), 400));
   }
 
-  return res.status(200).json(new ApiSuccess("Address deleted successfully"));
+  return res.status(200).json(new ApiSuccess(req.__("address_delete_success")));
 });
 
 /**
@@ -148,7 +147,7 @@ const updateAddress = asyncHandler(async (req, res, next) => {
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const updatedAddress = await Address.findByIdAndUpdate(
@@ -158,9 +157,9 @@ const updateAddress = asyncHandler(async (req, res, next) => {
   );
 
   if (!updatedAddress) {
-    return next(new ApiErrors("Failed with update this address", 404));
+    return next(new ApiErrors(req.__("address_update_failed"), 404));
   }
-  return res.status(200).json(new ApiSuccess("Address updated successfully"));
+  return res.status(200).json(new ApiSuccess(req.__("address_update_success")));
 });
 
 /**

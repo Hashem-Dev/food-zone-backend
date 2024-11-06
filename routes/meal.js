@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
+
+/**@routes validation */
 const {
   addMealValidation,
   categoryMealValidator,
@@ -9,6 +11,8 @@ const {
   addMealRatingValidator,
   specificMealsValidator,
 } = require("../services/validators/meal");
+
+/**@endpoints */
 const {
   addMeal,
   getCategoryMeals,
@@ -18,6 +22,7 @@ const {
   addMealRating,
 } = require("../controllers/meal");
 
+/** @token validation  */
 const {
   verifyToken,
   verifyAdminToken,

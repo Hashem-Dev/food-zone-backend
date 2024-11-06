@@ -1,7 +1,4 @@
-const express = require("express");
 const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
-const router = express.Router();
 
 // Configure Cloudinary with your account details
 cloudinary.config({
@@ -11,7 +8,7 @@ cloudinary.config({
 });
 
 /**
- * @desc Upload user avatar by cloudinary
+ * @desc Upload user images by cloudinary
  * @param {*} file
  * @param {*} folder
  * @param {*} prefix

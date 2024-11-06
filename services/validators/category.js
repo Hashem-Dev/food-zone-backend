@@ -20,9 +20,14 @@ const felidValidator = (felid, optional = false) => {
   return validation;
 };
 
-const createCategoryValidator = [felidValidator("title"), validationMiddleware];
+const createCategoryValidator = [
+  felidValidator("title.en"),
+  felidValidator("title.ar"),
+  validationMiddleware,
+];
 const updateCategoryValidator = [
-  felidValidator("title", true),
+  felidValidator("title.en", true),
+  felidValidator("title.ar", true),
   validationMiddleware,
 ];
 

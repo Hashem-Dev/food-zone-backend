@@ -1,7 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
-const fs = require("fs");
-const path = require("path");
 const User = require("../models/User");
 const Category = require("../models/Category");
 const ApiError = require("../utils/api-errors");
@@ -15,23 +13,31 @@ const { uploadImage } = require("../services/uploader/cloudinary");
  */
 const createCategory = asyncHandler(async (req, res, next) => {
   const user = req.user;
-  const { title } = req.body;
-  const slug = slugify(title);
-  const value = title;
+  const titleEn = req.body.title.en;
+  const titleAr = req.body.title.ar;
+  const slug = slugify(titleEn);
+  const value = titleEn;
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiError("User not found", 404));
+    return next(new ApiError(req.__("user_not_found"), 404));
   }
   const categoryIcon = await uploadImage(req.file, "Category", "category");
   const icon = categoryIcon.url;
-  const newCategory = await Category.create({ title, value, slug, icon });
+  const newCategory = await Category.create({
+    title: { en: titleEn, ar: titleAr },
+    value,
+    slug,
+    icon,
+  });
 
   if (!newCategory) {
-    return next(new ApiError("Failed with create new category", 400));
+    return next(new ApiError(req.__("create_category_failed"), 400));
   }
 
-  return res.status(201).json({ category: newCategory });
+  return res
+    .status(201)
+    .json(new ApiSuccess(req.__("category_create_success"), newCategory));
 });
 
 /**
@@ -41,19 +47,15 @@ const createCategory = asyncHandler(async (req, res, next) => {
  */
 const getRandomCategory = asyncHandler(async (req, res, next) => {
   const categories = await Category.aggregate([
-    { $match: { title: { $ne: "More" } } },
+    { $match: { value: { $ne: "more" } } },
     { $sample: { size: 4 } },
   ]);
 
-  const fixedCategory = await Category.find({ title: "More" });
-
-  console.log(fixedCategory);
-
+  const fixedCategory = await Category.find({ value: "more" });
   if (!categories) {
-    return next(new ApiError("No categories found", 404));
+    return next(new ApiError(req.__("categories_not_found"), 404));
   }
-
-  categories.push(fixedCategory);
+  categories.push(fixedCategory[0]);
 
   return res.status(200).json(new ApiSuccess("categories", categories));
 });
@@ -70,13 +72,13 @@ const allCategories = asyncHandler(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   const categories = await Category.aggregate([
-    { $match: { title: { $ne: "More" } } },
+    { $match: { value: { $ne: "more" } } },
   ])
     .skip(skip)
     .limit(limit);
 
   if (!categories) {
-    return next(new ApiError("No categories found", 404));
+    return next(new ApiError(req.__("categories_not_found"), 404));
   }
   return res.status(200).json(new ApiSuccess("Categories", categories));
 });
@@ -88,33 +90,33 @@ const allCategories = asyncHandler(async (req, res, next) => {
  */
 const updateCategory = asyncHandler(async (req, res, next) => {
   const category = req.params.id;
-  const { title } = req.body;
+  const titleEn = req.body.title.en;
+  const titleAr = req.body.title.ar;
 
   let value, slug, icon;
 
   if (req.file) {
     const categoryIcon = await uploadImage(req.file, "Category", "category");
-
     icon = categoryIcon.url;
   }
-  if (title) {
-    value = title;
-    slug = slugify(title);
+  if (titleEn) {
+    value = titleEn;
+    slug = slugify(titleEn);
   }
 
   const updatedCategory = await Category.findByIdAndUpdate(
     { _id: category },
-    { title, value, slug, icon },
+    { title: { en: titleEn, ar: titleAr }, value, slug, icon },
     { new: true }
   );
 
   if (!updatedCategory) {
-    return next(new ApiError("Category not found", 404));
+    return next(new ApiError(req.__("category_not_found"), 404));
   }
 
   return res
     .status(200)
-    .json(new ApiSuccess("Category updated successfully", updatedCategory));
+    .json(new ApiSuccess(req.__("category_update_success"), updatedCategory));
 });
 
 /**

@@ -1,7 +1,10 @@
 const { Schema, model } = require("mongoose");
 
 const restaurantsSchema = new Schema({
-  title: { type: String, required: true },
+  title: {
+    en: { type: String, required: true },
+    ar: { type: String, required: true },
+  },
   time: { type: String, required: true },
   cover: { type: String, required: true },
   foods: { type: Array, default: [] },
@@ -28,6 +31,7 @@ const restaurantsSchema = new Schema({
       default: "مطعمك الآن تحت المراجعة، سوف نعلمك عند الموافقة عليه",
     },
   },
+
   coords: {
     id: { type: String },
     latitude: { type: Number, required: true },

@@ -7,10 +7,7 @@ const Rating = require("../models/Rating");
 const ApiErrors = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
 const ApiFeatures = require("../utils/api-features");
-const {
-  uploadRestaurantImages,
-  uploadImage,
-} = require("../services/uploader/cloudinary");
+const { uploadImage } = require("../services/uploader/cloudinary");
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -30,21 +27,19 @@ const addRestaurant = asyncHandler(async (req, res, next) => {
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   if (!req.files.cover || !req.files.logo) {
-    return next(new ApiErrors("logo or cover is missing", 400));
+    return next(new ApiErrors(req.__("restaurant_image_required"), 400));
   }
 
   const { title, time, coords } = req.body;
-
   const cover = await uploadImage(
     req.files.cover[0],
     "Restaurant/covers",
     "cover"
   );
   const logo = await uploadImage(req.files.logo[0], "Restaurant/logos", "logo");
-  console.log(cover, logo);
 
   const newRestaurant = await Restaurant.create({
     owner: user,
@@ -56,12 +51,12 @@ const addRestaurant = asyncHandler(async (req, res, next) => {
   });
 
   if (!newRestaurant) {
-    return next(new ApiErrors("Failed with create the restaurant", 400));
+    return next(new ApiErrors(req.__("create_restaurant_failed"), 400));
   }
 
   return res
     .status(201)
-    .json(new ApiSuccess("Restaurant created successfully", newRestaurant));
+    .json(new ApiSuccess(req.__("create_restaurant_success"), newRestaurant));
 });
 
 /**
@@ -74,7 +69,7 @@ const getRestaurantVendor = asyncHandler(async (req, res, next) => {
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const apiFeature = new ApiFeatures(
@@ -89,11 +84,11 @@ const getRestaurantVendor = asyncHandler(async (req, res, next) => {
   });
 
   if (!vendorRestaurants) {
-    return next(new ApiErrors("No restaurants found", 404));
+    return next(new ApiErrors(req.__("no_restaurants_found"), 404));
   }
   return res
     .status(200)
-    .json(new ApiSuccess("All restaurants", vendorRestaurants));
+    .json(new ApiSuccess(req.__("all_restaurants"), vendorRestaurants));
 });
 
 /**
@@ -106,14 +101,16 @@ const getRestaurantById = asyncHandler(async (req, res, next) => {
   const restaurant = req.params.id;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   const foundRestaurant = await Restaurant.findById(restaurant);
   if (!foundRestaurant) {
-    return next(new ApiErrors("This restaurant not found", 404));
+    return next(new ApiErrors(req.__("restaurant_not_found"), 404));
   }
-  return res.status(200).json(new ApiSuccess("Restaurant", foundRestaurant));
+  return res
+    .status(200)
+    .json(new ApiSuccess(req.__("restaurant"), foundRestaurant));
 });
 
 /**
@@ -127,7 +124,7 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   let randomRestaurants;
   let message;
@@ -140,7 +137,7 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
   }).limit(5);
 
   if (randomRestaurants.length === 0) {
-    message = "No restaurants found in your location";
+    message = req.__("no_restaurant_in_location");
     randomRestaurants = await Restaurant.find({
       verification: "Verified",
       isAvailable: true,
@@ -148,7 +145,7 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
   }
 
   if (!randomRestaurants) {
-    return next(new ApiErrors("No restaurant found", 404));
+    return next(new ApiErrors(req.__("no_restaurants_found"), 404));
   }
 
   res
@@ -165,7 +162,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("No user found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   /** @pagination */
   const page = req.query.page || 1;
@@ -205,7 +202,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
     .limit(limit);
 
   if (randomRestaurants.length === 0) {
-    message = "No restaurants found in your location";
+    message = req.__("no_restaurant_in_location");
     randomRestaurants = await Restaurant.find({
       verification: "Verified",
       isAvailable: true,
@@ -231,18 +228,16 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
   const { userRating } = req.body;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   if (foundUser.role === "vendor") {
-    return next(
-      new ApiErrors("Vendors not allowed to use this rating feature.", 403)
-    );
+    return next(new ApiErrors(req.__("no_rating_for_vendor"), 403));
   }
 
   const restaurant = await Restaurant.findById(restaurantId);
   if (!restaurant) {
-    return next(new ApiErrors("This restaurant not found", 404));
+    return next(new ApiErrors(req.__("restaurant_not_found"), 404));
   }
 
   const ratedRestaurant = await Rating.findOne({
@@ -255,7 +250,7 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
       .status(200)
       .json(
         new ApiSuccess(
-          "You already rate this restaurant",
+          req.__("already_rate_restaurant"),
           ratedRestaurant.rating
         )
       );
@@ -281,7 +276,7 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
   });
 
   if (!newRating) {
-    return next(new ApiErrors("Failed to rate this restaurant", 400));
+    return next(new ApiErrors(req.__("rate_restaurant_failed"), 400));
   }
 
   return res.status(200).json({ newRating });

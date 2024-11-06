@@ -23,14 +23,14 @@ const verifyVendorRestaurant = asyncHandler(async (req, res, next) => {
 
   if (verification === "Verified") {
     enMessage = "You restaurant is verified now, check it now.";
-    arMessage = "تم الموافقة على مطعمك، يمكنك التحقق منه الآن";
+    arMessage = req.__("verify_restaurant");
     successMessage = "The restaurant is verified";
   } else if (verification === "Rejected") {
     enMessage = "Your restaurant is rejected.";
     arMessage = "لقد تم رفض مطعمك، لعدم توافقه مع سياسية الخصوصية لدينا";
     successMessage = "The restaurant is rejected";
   } else {
-    return next(new ApiErrors("You have to provide verification status"));
+    return next(new ApiErrors(req.__("provide_verification_status", 404)));
   }
 
   const updatedRestaurant = await Restaurant.findByIdAndUpdate(
@@ -44,7 +44,7 @@ const verifyVendorRestaurant = asyncHandler(async (req, res, next) => {
     { new: true }
   );
   if (!updatedRestaurant) {
-    return next(new ApiErrors("Restaurant not found", 404));
+    return next(new ApiErrors(req.__("restaurant_not_found"), 404));
   }
   return res.status(200).json(new ApiSuccess(successMessage));
 });
@@ -58,7 +58,7 @@ const getAllRestaurants = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found"));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   /** @paginate */
   const page = +req.query.page || 1;
@@ -89,8 +89,9 @@ const getAllRestaurants = asyncHandler(async (req, res, next) => {
     .sort("-createdAt -verification");
 
   if (!allRestaurants) {
-    return next(new ApiErrors("No restaurants found", 404));
+    return next(new ApiErrors(req.__("restaurant_not_found"), 404));
   }
   return res.status(200).json(new ApiSuccess("Restaurants", allRestaurants));
 });
+
 module.exports = { verifyVendorRestaurant, getAllRestaurants };

@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const slugify = require("slugify");
 const Category = require("../models/Category");
 const Restaurant = require("../models/Restaurant");
 const Meal = require("../models/Meals");
@@ -7,7 +8,6 @@ const Rating = require("../models/Rating");
 const ApiErrors = require("../utils/api-errors");
 const ApiSuccess = require("../utils/api-success");
 const { uploadImage } = require("../services/uploader/cloudinary");
-const { default: slugify } = require("slugify");
 
 /**
  * @desc Add new meal
@@ -15,31 +15,37 @@ const { default: slugify } = require("slugify");
  * @access protected
  */
 const addMeal = asyncHandler(async (req, res, next) => {
-  const {
-    title,
-    time,
-    category,
-    coords,
-    restaurant,
-    description,
-    price,
-    additives,
-  } = req.body;
+  const { title, time, category, coords, restaurant, description, price } =
+    req.body;
 
   const uploadImages = req.files.map((image, index) => {
-    const folder = `Meal/${slugify(title).toLowerCase()}`;
+    const folder = `Meal/${slugify(title.en).toLowerCase()}`;
     const prefix = `meal-${index}`;
     return uploadImage(image, folder, prefix);
   });
 
   const images = await Promise.all(uploadImages);
-  const foodType = req.foodType;
-  const foodTags = req.foodTags;
+
+  const foodType = {
+    en: req.body.foodType.en.split(","),
+    ar: req.body.foodType.ar.split(","),
+  };
+
+  const foodTags = {
+    en: req.body.foodTags.en.split(","),
+    ar: req.body.foodTags.ar.split(","),
+  };
+
+  const additives = {
+    en: JSON.parse(req.body.additives.en),
+    ar: JSON.parse(req.body.additives.ar),
+  };
+
   /** @category */
   const foundCategory = await Category.findById(category);
   if (!foundCategory) {
     return next(
-      new ApiErrors(`This category not found with this id: ${category}`, 404)
+      new ApiErrors(req.__("category_not_found_for_id") + `${category}`, 404)
     );
   }
 
@@ -48,7 +54,7 @@ const addMeal = asyncHandler(async (req, res, next) => {
   if (!foundRestaurant) {
     return next(
       new ApiErrors(
-        `This restaurant not found with this id: ${restaurant}`,
+        req.__("restaurant_not_found_for_id") + `${restaurant}`,
         404
       )
     );
@@ -65,12 +71,12 @@ const addMeal = asyncHandler(async (req, res, next) => {
     restaurant,
     description,
     price,
-    additives: JSON.parse(additives),
+    additives,
     images,
   });
 
   if (!newMeal) {
-    return next(new ApiErrors("Failed with creating meal", 400));
+    return next(new ApiErrors(req.__("create_meal_failed"), 400));
   }
 
   foundRestaurant.foods = newMeal._id;
@@ -78,7 +84,7 @@ const addMeal = asyncHandler(async (req, res, next) => {
 
   return res
     .status(201)
-    .json(new ApiSuccess("New meal has been added", newMeal));
+    .json(new ApiSuccess(req.__("create_meal_success"), newMeal));
 });
 
 /**
@@ -91,7 +97,7 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
   const category = req.params.category;
   const foundCategory = await Category.findById({ _id: category });
   if (!foundCategory) {
-    return next(new ApiErrors("This category is not found", 404));
+    return next(new ApiErrors(req.__("category_not_found"), 404));
   }
 
   /** @meals */
@@ -101,12 +107,12 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
   ]);
 
   if (!meals) {
-    return next(new ApiErrors("No meals found for this category", 404));
+    return next(new ApiErrors(req.__("category_meals_not_found"), 404));
   }
 
   return res
     .status(200)
-    .json(new ApiSuccess(`Meals for this ${foundCategory.title}`, meals));
+    .json(new ApiSuccess(req.__("meal_for") + `${foundCategory.title}`, meals));
 });
 
 /**
@@ -119,7 +125,7 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
   const restaurant = req.params.restaurant;
   const foundRestaurant = await Restaurant.findById(restaurant);
   if (!foundRestaurant) {
-    return next(new ApiErrors("No restaurant found for this id", 404));
+    return next(new ApiErrors(req.__("restaurant_not_found_for_id"), 404));
   }
   /** @meals */
   const meals = await Meal.aggregate([
@@ -128,12 +134,14 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
   ]);
 
   if (!meals) {
-    return next(new ApiErrors("No meals found for this category", 404));
+    return next(new ApiErrors(req.__("category_meals_not_found"), 404));
   }
 
   return res
     .status(200)
-    .json(new ApiSuccess(`Meals for this ${foundRestaurant.title}`, meals));
+    .json(
+      new ApiSuccess(req.__("meal_for") + `${foundRestaurant.title}`, meals)
+    );
 });
 
 /**
@@ -150,10 +158,10 @@ const getSpecificMeal = asyncHandler(async (req, res, next) => {
     })
     .populate({ path: "category", select: "title" });
   if (!foundMeal) {
-    return next(new ApiErrors("No meal found", 404));
+    return next(new ApiErrors(req.__("meal_not_found"), 404));
   }
 
-  return res.status(200).json(new ApiSuccess("Meal found", foundMeal));
+  return res.status(200).json(new ApiSuccess(req.__("meal_found"), foundMeal));
 });
 
 /**
@@ -190,7 +198,7 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
     .sort(sort);
 
   if (meals.length === 0) {
-    message = "No meals found in your location";
+    message = req.__("meals_not_found_location");
     meals = await Meal.aggregate([
       { $match: { isAvailable: true } },
       { $sample: { size: size } },
@@ -201,11 +209,11 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
   }
 
   if (!meals) {
-    return next(new ApiErrors("No meal found", 404));
+    return next(new ApiErrors(req.__("meal_not_found"), 404));
   }
   return res
     .status(200)
-    .json(new ApiSuccess("Meals", { page, message, meals }));
+    .json(new ApiSuccess(req.__("meals"), { page, message, meals }));
 });
 
 /**
@@ -218,14 +226,14 @@ const addMealRating = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
-    return next(new ApiErrors("User not found", 404));
+    return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
   /**@meal */
   const meal = req.params.id;
   const foundMeal = await Meal.findById(meal);
   if (!foundMeal) {
-    return next(new ApiErrors("No meal found", 404));
+    return next(new ApiErrors(req.__("meal_not_found"), 404));
   }
 
   const ratedUser = await Rating.findOne({
@@ -234,7 +242,7 @@ const addMealRating = asyncHandler(async (req, res, next) => {
   });
 
   if (ratedUser) {
-    return next(new ApiErrors("You have already rated this meal", 400));
+    return next(new ApiErrors(req.__("already_rated_meal"), 400));
   }
 
   const { userRating } = req.body;
@@ -257,11 +265,11 @@ const addMealRating = asyncHandler(async (req, res, next) => {
   });
 
   if (!ratedMeal) {
-    return next(new ApiErrors("Failed to rate this meal", 400));
+    return next(new ApiErrors(req.__("rate_meal_failed"), 400));
   }
   return res
     .status(200)
-    .json(new ApiSuccess("Rating add successfully", ratedMeal));
+    .json(new ApiSuccess(req.__("rate_meal_success"), ratedMeal));
 });
 
 /**

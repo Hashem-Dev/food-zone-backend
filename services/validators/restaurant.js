@@ -2,7 +2,8 @@ const { check } = require("express-validator");
 const { validationMiddleware } = require("../../middlewares/api-validation");
 
 const addRestaurantValidator = [
-  check("title").exists().withMessage("Title مطلوب").isString(),
+  check("title.ar").exists().withMessage("Title مطلوب").isString(),
+  check("title.en").exists().withMessage("Title مطلوب").isString(),
   check("time").exists().withMessage("time مطلوب").isString(),
 
   check("coords.latitude")

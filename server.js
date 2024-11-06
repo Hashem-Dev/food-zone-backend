@@ -43,8 +43,6 @@ connectDB(() =>
   })
 );
 
-app.use(express.static(path.join(__dirname, "./uploads/meals/")));
-
 /** @Mount routes */
 app.use(`${api}/admin`, adminRoutes);
 app.use(`${api}/users`, usersRoutes);
@@ -72,3 +70,13 @@ app.all("*", (req, res, next) => {
 });
 
 app.use(globalErrors);
+
+/** @uncaughtException */
+process.on("uncaughtException", (error) => {
+  console.error("Unhandled Exception:", error);
+});
+
+/** @unhandledRejection  */
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
