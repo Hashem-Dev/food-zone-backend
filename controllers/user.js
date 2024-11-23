@@ -86,7 +86,7 @@ const login = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("login_invalid"), 404));
   }
 
-  if (!(foundUser.emailOtp === 1)) {
+  if (foundUser.emailOtp !== 1) {
     return next(new ApiErrors(req.__("verify_email_first"), 409));
   }
 
@@ -123,7 +123,7 @@ const verifyEmailOtp = asyncHandler(async (req, res, next) => {
 
   const dateNow = new Date();
   const dbDate = new Date(user.emailOtpExpire);
-  if (dateNow > dbDate || !(otp === user.emailOtp)) {
+  if (dateNow > dbDate || otp !== user.emailOtp) {
     return next(new ApiErrors(req.__("otp_invalid"), 400));
   }
 
@@ -215,7 +215,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
 
-  if (!(user.passwordOtp === 1)) {
+  if (user.passwordOtp !== 1) {
     return next(new ApiErrors(req.__("otp_verify_required"), 400));
   }
 
@@ -250,7 +250,7 @@ const verifyPasswordOtp = asyncHandler(async (req, res, next) => {
   const dateNow = new Date();
   const dbDate = new Date(user.passwordOtpExpire);
 
-  if (dateNow > dbDate || !(user.passwordOtp === otp)) {
+  if (dateNow > dbDate || user.passwordOtp !== otp) {
     return next(new ApiErrors(req.__("otp_invalid"), 400));
   }
 
