@@ -13,6 +13,8 @@ const {
   updateUser,
   uploadUserAvatar,
   logout,
+  registerWithGoogle,
+  loginWithGoogle,
 } = require("../controllers/user");
 
 /** @validators */
@@ -51,6 +53,8 @@ router.route("/reset-password").patch(resetPasswordValidator, resetPassword);
 router
   .route("/avatar")
   .post(verifyToken, upload.single("avatar"), uploadUserAvatar);
+
+router.route("/auth/google").post(registerWithGoogle).get(loginWithGoogle);
 
 router.route("/logout").post(verifyToken, logout);
 

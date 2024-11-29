@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const { sendEmailChangeOtp } = require("../utils/otp-sender");
 const userSchema = new Schema(
   {
+    googleId: { type: String, unique: true },
     name: {
       en: {
         type: String,
@@ -36,7 +37,7 @@ const userSchema = new Schema(
       url: { type: String },
       publicId: { type: String },
     },
-    phone: { type: Number, default: "0981534952" },
+    phone: { type: Number, default: "09000000000" },
     phoneVerification: { type: Boolean, default: false },
     passwordOtp: { type: Number, default: 0 },
     passwordOtpExpire: { type: Date },
@@ -96,7 +97,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
             update.$set.email,
             req.language
           );
-          emailOtpExpire = Date.now() + 10 * 60 * 1000;
+          const emailOtpExpire = Date.now() + 10 * 60 * 1000;
           thisUser.emailOtp = emailOtp;
           thisUser.emailOtpExpire = emailOtpExpire;
           await thisUser.save();
