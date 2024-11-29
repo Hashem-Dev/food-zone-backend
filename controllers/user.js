@@ -356,9 +356,7 @@ const registerWithGoogle = asyncHandler(async (req, res, next) => {
   const { googleId, email, imageUrl, displayName } = req.body;
   const user = await User.findOne({ googleId, email });
   if (user) {
-    return next(
-      new ApiErrors("This email already exist, you have to login", 409)
-    );
+    return next(new ApiErrors("This email already exist", 409));
   }
   const newUser = await User.create({
     googleId,
@@ -391,7 +389,7 @@ const registerWithGoogle = asyncHandler(async (req, res, next) => {
 
 const loginWithGoogle = asyncHandler(async (req, res, next) => {
   const { googleId, email } = req.body;
-  const foundUser = await User.findOne({ googleId, email });
+  const foundUser = await User.findOne({ email });
   if (!foundUser) {
     return next(
       new ApiErrors(
@@ -400,9 +398,11 @@ const loginWithGoogle = asyncHandler(async (req, res, next) => {
       )
     );
   }
+
   const accessToken = accessTokenGenerator(foundUser);
   const refreshToken = refreshTokenGenerator(foundUser);
 
+  foundUser.googleId = googleId;
   foundUser.accessToken = accessToken;
   foundUser.refreshToken = refreshToken;
 
