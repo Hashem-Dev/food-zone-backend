@@ -13,8 +13,6 @@ const {
   updateUser,
   uploadUserAvatar,
   logout,
-  registerWithGoogle,
-  loginWithGoogle,
 } = require("../controllers/user");
 
 /** @validators */
@@ -34,6 +32,10 @@ const {
   registerWithFacebook,
   loginWithFacebook,
 } = require("../controllers/facebook_authentication");
+const {
+  registerWithGoogle,
+  loginWithGoogle,
+} = require("../controllers/google-authentication");
 const upload = multer({ storage: multer.memoryStorage() });
 
 router
