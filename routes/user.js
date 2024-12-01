@@ -30,6 +30,10 @@ const {
 } = require("../services/validators/user");
 const { verifyToken } = require("../middlewares/verify-token");
 const multer = require("multer");
+const {
+  registerWithFacebook,
+  loginWithFacebook,
+} = require("../controllers/facebook_authentication");
 const upload = multer({ storage: multer.memoryStorage() });
 
 router
@@ -55,6 +59,11 @@ router
   .post(verifyToken, upload.single("avatar"), uploadUserAvatar);
 
 router.route("/auth/google").post(registerWithGoogle).get(loginWithGoogle);
+
+router
+  .route("/auth/facebook")
+  .post(registerWithFacebook)
+  .get(loginWithFacebook);
 
 router.route("/logout").post(verifyToken, logout);
 

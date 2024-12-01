@@ -4,6 +4,7 @@ const { sendEmailChangeOtp } = require("../utils/otp-sender");
 const userSchema = new Schema(
   {
     googleId: { type: String, unique: true },
+    facebookId: { type: String, unique: true },
     name: {
       en: {
         type: String,

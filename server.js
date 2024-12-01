@@ -52,9 +52,6 @@ app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
 app.use(`${api}/meal`, mealRoutes);
 app.use(`${api}/token`, tokenRoutes);
-app.use(`${api}/auth`, (req, res) => {
-  res.send("HOHOHOHOHOHOHOHOOHHO");
-});
 
 /** @ErrorHandling */
 
