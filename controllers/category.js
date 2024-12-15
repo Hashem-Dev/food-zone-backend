@@ -48,7 +48,7 @@ const createCategory = asyncHandler(async (req, res, next) => {
 const getRandomCategory = asyncHandler(async (req, res, next) => {
   const categories = await Category.aggregate([
     { $match: { value: { $ne: "more" } } },
-    { $sample: { size: 4 } },
+    { $sample: { size: 7 } },
   ]);
 
   const fixedCategory = await Category.find({ value: "more" });
