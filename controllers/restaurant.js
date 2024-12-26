@@ -121,7 +121,15 @@ const getRestaurantById = asyncHandler(async (req, res, next) => {
 const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
   const { longitude, latitude } = req.query;
   const user = req.user;
+  const size = +req.query.size || 5;
 
+  /** @paginate */
+  const page = +req.query.page || 1;
+  const limit = +req.query.limit || 10;
+  const skip = (page - 1) * limit;
+
+  /** @sorting */
+  const sort = req.query.sort || { createdAt: -1 };
   const foundUser = await User.findById(user);
   if (!foundUser) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
@@ -129,19 +137,35 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
   let randomRestaurants;
   let message;
 
-  randomRestaurants = await Restaurant.find({
-    "coords.latitude": latitude,
-    "coords.longitude": longitude,
-    verification: "Verified",
-    isAvailable: true,
-  }).limit(5);
+  randomRestaurants = await Restaurant.aggregate([
+    {
+      $match: {
+        "coords.latitude": { $eq: latitude },
+        "coords.longitude": { $eq: longitude },
+        verification: "Verified",
+        isAvailable: true,
+      },
+    },
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: limit },
+    { $sample: { size: size } },
+  ]);
 
   if (randomRestaurants.length === 0) {
     message = req.__("no_restaurant_in_location");
-    randomRestaurants = await Restaurant.find({
-      verification: "Verified",
-      isAvailable: true,
-    }).limit(5);
+    randomRestaurants = await Restaurant.aggregate([
+      {
+        $match: {
+          isAvailable: true,
+          verification: "Verified",
+        },
+      },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: limit },
+      { $sample: { size: size } },
+    ]);
   }
 
   if (!randomRestaurants) {

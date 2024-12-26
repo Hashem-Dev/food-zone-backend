@@ -79,7 +79,7 @@ const addMeal = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("create_meal_failed"), 400));
   }
 
-  foundRestaurant.foods = newMeal._id;
+  foundRestaurant.foods.push(newMeal._id);
   foundRestaurant.save();
 
   return res
@@ -101,10 +101,10 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
   }
 
   /** @meals */
-  const meals = await Meal.aggregate([
-    { $match: { category: foundCategory._id } },
-    { $sample: { size: 5 } },
-  ]);
+  const meals = await Meal.find({ category: foundCategory._id }).populate({
+    path: "restaurant",
+    select: "title logo",
+  });
 
   if (!meals) {
     return next(new ApiErrors(req.__("category_meals_not_found"), 404));
@@ -131,6 +131,16 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
   const meals = await Meal.aggregate([
     { $match: { restaurant: foundRestaurant._id } },
     { $sample: { size: 5 } },
+    {
+      $project: {
+        title: 1,
+        time: 1,
+        images: 1,
+        rating: 1,
+        price: 1,
+        _id: 0,
+      },
+    },
   ]);
 
   if (!meals) {
@@ -179,41 +189,60 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   /** @sorting */
-  const sort = req.query.sort || "-createdAt";
+  const sort = req.query.sort || { createdAt: -1 };
 
   let meals;
   let message;
   meals = await Meal.aggregate([
     {
       $match: {
-        "coords.latitude": { $eq: +latitude },
-        "coords.longitude": { $eq: +longitude },
+        "coords.latitude": { $eq: latitude },
+        "coords.longitude": { $eq: longitude },
         isAvailable: true,
       },
     },
+    { $sort: sort },
+    { $skip: skip },
+    { $limit: limit },
     { $sample: { size: size } },
-  ])
-    .skip(skip)
-    .limit(limit)
-    .sort(sort);
+
+    {
+      $lookup: {
+        from: "restaurants",
+        localField: "restaurant",
+        foreignField: "_id",
+        pipeline: [{ $project: { title: 1, logo: 1, _id: 1 } }],
+        as: "restaurant",
+      },
+    },
+    { $unwind: "$restaurant" },
+  ]);
 
   if (meals.length === 0) {
     message = req.__("meals_not_found_location");
     meals = await Meal.aggregate([
       { $match: { isAvailable: true } },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: limit },
       { $sample: { size: size } },
-    ])
-      .skip(skip)
-      .limit(limit)
-      .sort(sort);
+      {
+        $lookup: {
+          from: "restaurants",
+          localField: "restaurant",
+          foreignField: "_id",
+          pipeline: [{ $project: { title: 1, logo: 1, _id: 0 } }],
+          as: "restaurant",
+        },
+      },
+      { $unwind: "$restaurant" },
+    ]);
   }
 
   if (!meals) {
     return next(new ApiErrors(req.__("meal_not_found"), 404));
   }
-  return res
-    .status(200)
-    .json(new ApiSuccess(req.__("meals"), { page, message, meals }));
+  return res.status(200).json({ page, message, meals });
 });
 
 /**

@@ -30,13 +30,7 @@ const {
 
 router
   .route("/")
-  .post(
-    verifyToken,
-    verifyAdminToken,
-    upload.array("images", 5),
-    addMealValidation,
-    addMeal
-  )
+  .post(upload.array("images", 5), addMealValidation, addMeal)
   .get(getRandomMeals);
 
 router
