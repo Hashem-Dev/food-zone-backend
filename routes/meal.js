@@ -20,6 +20,7 @@ const {
   getSpecificMeal,
   getRandomMeals,
   addMealRating,
+  addMealImages,
 } = require("../controllers/meal");
 
 /** @token validation  */
@@ -30,7 +31,8 @@ const {
 
 router
   .route("/")
-  .post(upload.array("images", 5), addMealValidation, addMeal)
+  .post(addMeal)
+  .patch(upload.array("images", 5), addMealImages)
   .get(getRandomMeals);
 
 router
@@ -42,7 +44,7 @@ router
   .get(restaurantMealValidator, getRestaurantMeals);
 
 router
-  .route("/:id")
+  .route("/id/:id")
   .get(specificMealsValidator, getSpecificMeal)
   .patch(verifyToken, addMealRatingValidator, addMealRating);
 

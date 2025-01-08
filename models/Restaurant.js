@@ -41,6 +41,7 @@ const restaurantsSchema = new Schema({
     address: { type: String, required: true },
     title: { type: String, required: true },
   },
+  reviews: [{ type: Schema.Types.ObjectId, ref: "Rating" }],
 });
 
 restaurantsSchema.index({ coords: "2dsphere" });

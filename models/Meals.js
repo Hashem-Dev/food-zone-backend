@@ -1,9 +1,16 @@
 const { Schema, model } = require("mongoose");
 
 const additiveSchema = new Schema({
-  title: { type: String, required: true },
+  _id: { type: Schema.Types.ObjectId, auto: true }, // Unique ID for each additive
+  title: {
+    en: { type: String, required: true },
+    ar: { type: String, required: true },
+  },
   price: { type: Number, required: true },
-  description: { type: String },
+  description: {
+    en: { type: String },
+    ar: { type: String },
+  },
   type: {
     type: String,
     enum: [
@@ -22,6 +29,7 @@ const additiveSchema = new Schema({
 
 const mealSchema = new Schema(
   {
+    isNewMeal: { type: Boolean, default: true },
     title: {
       en: { type: String, required: true },
       ar: { type: String, required: true },
@@ -53,11 +61,16 @@ const mealSchema = new Schema(
       ar: { type: String, required: true },
     },
     price: { type: Number, required: true },
-    additives: {
-      en: { type: [additiveSchema] },
-      ar: { type: [additiveSchema] },
+    priceWithoutDiscount: { type: Number, default: 0.0 },
+    additives: [{ type: additiveSchema }],
+    nutritionalInfo: {
+      calories: { type: String, default: "calories" },
+      protein: { type: String, default: "protein" },
+      carbs: { type: String, default: "carbs" },
+      fat: { type: String, default: "fat" },
     },
-    images: { type: Array, required: true },
+    images: { type: Array },
+    reviews: [{ type: Schema.Types.ObjectId, ref: "Rating" }],
   },
   { timestamps: true }
 );

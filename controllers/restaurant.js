@@ -249,7 +249,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
 const addRestaurantRating = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const restaurantId = req.params.id;
-  const { userRating } = req.body;
+  const { userRating, review, reviewImages } = req.body;
   const foundUser = await User.findById(user);
   if (!foundUser) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
@@ -284,20 +284,23 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
 
   let rating =
     (+restaurant.rating * +restaurant.ratingCount + userRating) / ratingCount;
-  console.log(rating);
 
-  rating = parseFloat(rating.toFixed(3));
-
-  restaurant.rating = +rating;
-  restaurant.ratingCount = +ratingCount;
-  await restaurant.save();
+  rating = parseFloat(rating.toFixed(2));
 
   const newRating = await Rating.create({
     user: user,
     ratingType: "Restaurant",
     product: restaurant._id,
     rating: userRating,
+    review,
+    reviewImages,
   });
+
+  restaurant.rating = +rating;
+  restaurant.ratingCount = +ratingCount;
+  restaurant.reviews.push(newRating._id);
+
+  await restaurant.save();
 
   if (!newRating) {
     return next(new ApiErrors(req.__("rate_restaurant_failed"), 400));
