@@ -47,9 +47,17 @@ const userSchema = new Schema(
     addresses: [{ type: Schema.Types.ObjectId, ref: "Address", default: [] }],
     orders: [{ type: Schema.Types.ObjectId, ref: "Order", default: [] }],
     favoriteRestaurants: [
-      { type: Schema.Types.ObjectId, ref: "Restaurant", default: [] },
+      {
+        restaurant: { type: Schema.Types.ObjectId, ref: "Restaurant" },
+        isAdded: { type: Boolean, default: false },
+      },
     ],
-    favoriteMeals: [{ type: Schema.Types.ObjectId, ref: "Meal", default: [] }],
+    favoriteMeals: [
+      {
+        meals: { type: Schema.Types.ObjectId, ref: "Meal" },
+        isAdded: { type: Boolean, default: false },
+      },
+    ],
     role: {
       type: String,
       default: "user",

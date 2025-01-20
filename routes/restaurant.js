@@ -6,6 +6,8 @@ const {
   getRandomNearByRestaurants,
   allNearbyRestaurants,
   addRestaurantRating,
+  addToFavorite,
+  getFavoriteRestaurant,
 } = require("../controllers/restaurant");
 const {
   verifyToken,
@@ -44,6 +46,10 @@ router
   .patch(restaurantRatingValidator, addRestaurantRating);
 
 router.route("/random").get(getRandomNearByRestaurants);
+
 router.route("/all").get(allNearbyRestaurants);
+
+router.route("/favorite/:restaurantId").patch(addToFavorite);
+router.route("/favorite").get(getFavoriteRestaurant);
 
 module.exports = router;

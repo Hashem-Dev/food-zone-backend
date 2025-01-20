@@ -22,6 +22,7 @@ const categoryRoutes = require("./routes/category");
 const restaurantRoutes = require("./routes/restaurant");
 const mealRoutes = require("./routes/meal");
 const tokenRoutes = require("./routes/token");
+const reviewsRoutes = require("./routes/reviews");
 
 app.use(express.json());
 app.use(cors);
@@ -52,6 +53,7 @@ app.use(`${api}/restaurant`, restaurantRoutes);
 app.use(`${api}/category`, categoryRoutes);
 app.use(`${api}/meal`, mealRoutes);
 app.use(`${api}/token`, tokenRoutes);
+app.use(`${api}/reviews`, reviewsRoutes);
 
 /** @ErrorHandling */
 

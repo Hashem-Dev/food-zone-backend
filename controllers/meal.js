@@ -112,7 +112,7 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
       path: "restaurant",
       select: "title logo",
     })
-    .select("title price images time rating  priceWithoutDiscount isNew");
+    .select("title price images time rating  priceWithoutDiscount isNewMeal");
 
   if (!meals) {
     return next(new ApiErrors(req.__("category_meals_not_found"), 404));
@@ -144,6 +144,8 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
         images: 1,
         rating: 1,
         price: 1,
+        priceWithoutDiscount: 1,
+        isNewMeal: 1,
         _id: 1,
       },
     },
@@ -153,11 +155,7 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("category_meals_not_found"), 404));
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiSuccess(req.__("meal_for") + `${foundRestaurant.title}`, meals)
-    );
+  return res.status(200).json(meals);
 });
 
 /**
@@ -301,7 +299,7 @@ const addMealRating = asyncHandler(async (req, res, next) => {
 
   const ratedUser = await Rating.findOne({
     user,
-    product: foundMeal._id,
+    meal: foundMeal._id,
   });
 
   if (ratedUser) {
@@ -309,6 +307,8 @@ const addMealRating = asyncHandler(async (req, res, next) => {
   }
 
   const { userRating, review, reviewImages } = req.body;
+
+  const isPositive = userRating >= 4;
 
   const ratingCount = +foundMeal.ratingCount + 1;
   let rating =
@@ -319,10 +319,11 @@ const addMealRating = asyncHandler(async (req, res, next) => {
   const ratedMeal = await Rating.create({
     user,
     ratingType: "Meal",
-    product: foundMeal._id,
+    mealId: foundMeal._id,
     rating: userRating,
     review,
     reviewImages,
+    isPositive,
   });
 
   foundMeal.rating = +rating;
@@ -348,6 +349,64 @@ const deleteSpecificMeal = asyncHandler(async (req, res, next) => {
   const foundMeal = await Meal.findById(meal);
 });
 
+/**
+ * @desc Add meal to user favorite
+ * @route PATCH /api/v1/meal/favorite/
+ * @access protected
+ */
+const addMealToFavorite = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const { mealId } = req.params;
+
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found.", 404));
+  }
+  console.log(mealId);
+
+  const foundMeal = await Meal.findById(mealId);
+  if (!foundMeal) {
+    return next(new ApiErrors("Meal not found", 404));
+  }
+
+  const favoriteMeals = foundUser.favoriteMeals.some((meal) => {
+    if (meal.meals.toString() === mealId) {
+      return true;
+    }
+  });
+
+  if (!favoriteMeals) {
+    const newFavorite = { meals: mealId, isAdded: true };
+    foundUser.favoriteMeals.push(newFavorite);
+    await foundUser.save();
+    return res.status(200).json(foundUser);
+  } else {
+    const filteredMeals = foundUser.favoriteMeals.filter(
+      (meal) => meal.meals.toString() !== mealId
+    );
+    foundUser.favoriteMeals = filteredMeals;
+    await foundUser.save();
+    return res.status(200).json(foundUser);
+  }
+});
+
+/**
+ * @desc Get all favorite meals
+ * @route GET /api/v1/meals/favorite
+ * @access protected
+ */
+const getAllFavoriteMeals = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found", 404));
+  }
+  const favoriteMeals = foundUser.favoriteMeals.map((meal) =>
+    meal.meals.toString()
+  );
+  return res.status(200).json(favoriteMeals);
+});
+
 module.exports = {
   addMeal,
   addMealImages,
@@ -356,4 +415,6 @@ module.exports = {
   getSpecificMeal,
   getRandomMeals,
   addMealRating,
+  addMealToFavorite,
+  getAllFavoriteMeals,
 };

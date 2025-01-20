@@ -13,6 +13,7 @@ const {
   updateUser,
   uploadUserAvatar,
   logout,
+  getFavoriteDetails,
 } = require("../controllers/user");
 
 /** @validators */
@@ -68,5 +69,7 @@ router
   .get(loginWithFacebook);
 
 router.route("/logout").post(verifyToken, logout);
+
+router.route("/favorite").get(verifyToken, getFavoriteDetails);
 
 module.exports = router;

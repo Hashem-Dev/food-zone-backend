@@ -1,5 +1,5 @@
 const asyncHandler = require("express-async-handler");
-
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Restaurant = require("../models/Restaurant");
 const Rating = require("../models/Rating");
@@ -266,7 +266,7 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
 
   const ratedRestaurant = await Rating.findOne({
     user,
-    product: restaurant._id,
+    restaurantId: restaurant._id,
   });
 
   if (ratedRestaurant) {
@@ -286,14 +286,15 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
     (+restaurant.rating * +restaurant.ratingCount + userRating) / ratingCount;
 
   rating = parseFloat(rating.toFixed(2));
-
+  const isPositive = userRating >= 4;
   const newRating = await Rating.create({
     user: user,
     ratingType: "Restaurant",
-    product: restaurant._id,
+    restaurantId: restaurant._id,
     rating: userRating,
     review,
     reviewImages,
+    isPositive,
   });
 
   restaurant.rating = +rating;
@@ -309,6 +310,71 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
   return res.status(200).json({ newRating });
 });
 
+/**
+ * @desc Add restaurant to user favorite
+ * @route PATCH /api/v1/restaurant/favorite
+ * @access Protected
+ */
+const addToFavorite = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const { restaurantId } = req.params;
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return res.status(404).json({ message: "User not found." });
+  }
+
+  const foundRestaurant = await Restaurant.findById({ _id: restaurantId });
+  if (!foundRestaurant) {
+    return res.status(404).json({ message: "Restaurant not found." });
+  }
+
+  const isRestaurantAdded = foundUser.favoriteRestaurants.some((favorite) => {
+    if (favorite.restaurant.toString() === restaurantId) {
+      return true;
+    }
+  });
+
+  if (!isRestaurantAdded) {
+    foundUser.favoriteRestaurants.push({
+      restaurant: restaurantId,
+      isAdded: true,
+    });
+    await foundUser.save();
+    const restaurantIds = foundUser.favoriteRestaurants.map((restaurant) => {
+      return restaurant.id.toString();
+    });
+    return res.status(200).json(restaurantIds);
+  } else {
+    foundUser.favoriteRestaurants = foundUser.favoriteRestaurants.filter(
+      (favorite) => favorite.restaurant.toString() !== restaurantId
+    );
+    await foundUser.save();
+    const restaurantIds = foundUser.favoriteRestaurants.map((restaurant) => {
+      return restaurant.id.toString();
+    });
+    return res.status(200).json(restaurantIds);
+  }
+});
+
+/**
+ * @desc Get favorite restaurants for user
+ * @route GET /api/v1/restaurant/favorite
+ * @access Protected
+ */
+const getFavoriteRestaurant = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found", 404));
+  }
+
+  const restaurantIds = foundUser.favoriteRestaurants.map((restaurant) => {
+    return restaurant.restaurant.toString();
+  });
+
+  return res.status(200).json(restaurantIds);
+});
+
 module.exports = {
   addRestaurant,
   getRestaurantVendor,
@@ -316,4 +382,6 @@ module.exports = {
   getRandomNearByRestaurants,
   allNearbyRestaurants,
   addRestaurantRating,
+  addToFavorite,
+  getFavoriteRestaurant,
 };

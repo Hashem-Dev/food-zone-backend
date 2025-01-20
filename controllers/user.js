@@ -346,6 +346,52 @@ const logout = asyncHandler(async (req, res, next) => {
   return res.status(200).json({ status: "Success", message: "logout_success" });
 });
 
+/**
+ * @desc Get all user favorite with details
+ * @route GET /api/v1/user/favorite
+ * @access protected
+ */
+const getFavoriteDetails = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const { detailType } = req.query;
+  let selection;
+  let path;
+  if (!detailType || detailType === undefined) {
+    return next(new ApiErrors("you must provide detail type", 400));
+  }
+
+  if (detailType === "meals") {
+    selection = "favoriteMeals";
+  } else if (detailType === "restaurants") {
+    selection = "favoriteRestaurants";
+  }
+
+  const foundUser = await User.findById(user).select(selection);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found", 404));
+  }
+  if (detailType === "meals") {
+    const meals = await foundUser.populate({
+      path: "favoriteMeals.meals",
+      select: "title price priceWithoutDiscount time rating images restaurant",
+      populate: {
+        path: "restaurant",
+        select: "title logo",
+      },
+    });
+    return res.status(200).json({ type: "meal", meals });
+  } else if (detailType === "restaurants") {
+    const restaurants = await foundUser.populate({
+      path: "favoriteRestaurants.restaurant",
+      select: "title logo rating coords cover time",
+    });
+
+    return res.status(200).json({ type: "restaurant", restaurants });
+  }
+
+  return res.status(200).json(foundUser);
+});
+
 module.exports = {
   register,
   login,
@@ -357,4 +403,5 @@ module.exports = {
   updateUser,
   uploadUserAvatar,
   logout,
+  getFavoriteDetails,
 };
