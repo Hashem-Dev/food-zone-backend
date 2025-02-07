@@ -3,8 +3,7 @@ const bcrypt = require("bcrypt");
 const { sendEmailChangeOtp } = require("../utils/otp-sender");
 const userSchema = new Schema(
   {
-    googleId: { type: String, unique: true },
-    facebookId: { type: String, unique: true },
+    googleId: { type: String, unique: false },
     name: {
       en: {
         type: String,
@@ -34,8 +33,14 @@ const userSchema = new Schema(
       required: [true, "Password is required"],
       minLength: 8,
     },
+    dateOfBirth: { type: Date, default: "" },
+    gender: { type: String, default: "" },
     avatar: {
-      url: { type: String },
+      url: {
+        type: String,
+        default:
+          "https://cdn.icon-icons.com/icons2/3066/PNG/512/user_person_profile_avatar_icon_190943.png",
+      },
       publicId: { type: String },
     },
     phone: { type: Number, default: "09000000000" },

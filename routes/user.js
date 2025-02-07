@@ -14,6 +14,7 @@ const {
   uploadUserAvatar,
   logout,
   getFavoriteDetails,
+  removeUserAvatar,
 } = require("../controllers/user");
 
 /** @validators */
@@ -37,7 +38,6 @@ const {
   registerWithGoogle,
   loginWithGoogle,
 } = require("../controllers/google-authentication");
-const upload = multer({ storage: multer.memoryStorage() });
 
 router
   .route("/")
@@ -57,18 +57,17 @@ router
 
 router.route("/reset-password").patch(resetPasswordValidator, resetPassword);
 
-router
-  .route("/avatar")
-  .post(verifyToken, upload.single("avatar"), uploadUserAvatar);
+router.route("/avatar").patch(verifyToken, uploadUserAvatar);
+router.route("/avatar-remove").patch(verifyToken, removeUserAvatar);
 
 router.route("/auth/google").post(registerWithGoogle).get(loginWithGoogle);
 
-router
-  .route("/auth/facebook")
-  .post(registerWithFacebook)
-  .get(loginWithFacebook);
+// router
+//   .route("/auth/facebook")
+//   .post(registerWithFacebook)
+//   .get(loginWithFacebook);
 
-router.route("/logout").post(verifyToken, logout);
+router.route("/logout").post(logout);
 
 router.route("/favorite").get(verifyToken, getFavoriteDetails);
 

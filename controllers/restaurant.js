@@ -99,10 +99,10 @@ const getRestaurantVendor = asyncHandler(async (req, res, next) => {
 const getRestaurantById = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const restaurant = req.params.id;
-  const foundUser = await User.findById(user);
-  if (!foundUser) {
-    return next(new ApiErrors(req.__("user_not_found"), 404));
-  }
+  // const foundUser = await User.findById(user);
+  // if (!foundUser) {
+  //   return next(new ApiErrors(req.__("user_not_found"), 404));
+  // }
 
   const foundRestaurant = await Restaurant.findById(restaurant);
   if (!foundRestaurant) {
@@ -130,10 +130,10 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
 
   /** @sorting */
   const sort = req.query.sort || { createdAt: -1 };
-  const foundUser = await User.findById(user);
-  if (!foundUser) {
-    return next(new ApiErrors(req.__("user_not_found"), 404));
-  }
+  // const foundUser = await User.findById(user);
+  // if (!foundUser) {
+  //   return next(new ApiErrors(req.__("user_not_found"), 404));
+  // }
   let randomRestaurants;
   let message;
 

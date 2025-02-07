@@ -12,6 +12,7 @@ const addressSchema = new Schema(
     street: { type: String, default: "none" },
     apartment: { type: String, default: "none" },
     defaultAddress: { type: Boolean, default: false },
+    addressTitle: { type: String, default: "Title address" },
     location: {
       type: {
         type: String,

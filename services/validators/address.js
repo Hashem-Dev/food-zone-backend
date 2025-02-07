@@ -52,14 +52,11 @@ const addAddressValidator = [
 ];
 
 const setDefaultAddressValidator = [
-  addressIdValidator("addressId"),
+  addressIdValidator("id"),
   validationMiddleware,
 ];
 
-const deleteAddressValidator = [
-  addressIdValidator("addressId"),
-  validationMiddleware,
-];
+const deleteAddressValidator = [addressIdValidator("id"), validationMiddleware];
 
 const updateAddressValidator = [
   countryValidator("country", true),

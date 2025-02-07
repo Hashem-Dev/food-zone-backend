@@ -16,8 +16,23 @@ const addAddress = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
-  const { country, city, street, apartment, location, additionalInfo } =
-    req.body;
+  const {
+    country,
+    city,
+    street,
+    apartment,
+    location,
+    additionalInfo,
+    addressTitle,
+  } = req.body;
+
+  /**
+   *
+   * Check is address added or not by lat & lon
+   *
+   *
+   *
+   */
 
   const newAddress = new Address({
     user,
@@ -27,18 +42,17 @@ const addAddress = asyncHandler(async (req, res, next) => {
     apartment,
     location,
     additionalInfo,
+    addressTitle,
   });
   await newAddress.save();
-  foundUser.addresses = newAddress._id;
+  foundUser.addresses.push(newAddress._id);
   foundUser.save();
 
   if (!newAddress) {
     return next(new ApiErrors(req.__("new_address_failed"), 400));
   }
 
-  return res
-    .status(201)
-    .json(new ApiSuccess(req.__("new_address_success"), newAddress));
+  return res.status(201).json(newAddress);
 });
 
 /**
@@ -53,7 +67,10 @@ const getAllAddress = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
   const countDocument = await Address.countDocuments();
-  const features = new ApiFeatures(Address.find({ user }), req.query);
+  const features = new ApiFeatures(
+    Address.find({ user: user }).select("-updatedAt -__v"),
+    req.query
+  );
   features.paginate(countDocument).sort();
 
   const { paginationResults, mongooseQuery } = features;
@@ -111,23 +128,25 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
  * @access protected
  */
 const deleteAddress = asyncHandler(async (req, res, next) => {
+  console.log("ddddddddddddddddddd");
   const user = req.user;
-  const addressId = req.params.id;
+  const { id } = req.params;
   const foundUser = await User.findById(user);
+
   if (!foundUser) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
-  const foundAddress = await Address.findById(addressId);
+  const foundAddress = await Address.findById(id);
   if (!foundAddress) {
     return next(new ApiErrors(req.__("address_not_found"), 404));
   }
 
   const updateUser = await User.findByIdAndUpdate(
     user,
-    { $pull: { addresses: addressId } },
+    { $pull: { addresses: id } },
     { new: true }
   );
-  const deletedAddress = await Address.findByIdAndDelete(addressId);
+  const deletedAddress = await Address.findByIdAndDelete(id);
   if (!updateUser || !deletedAddress) {
     return next(new ApiErrors(req.__("address_delete_failed"), 400));
   }

@@ -24,7 +24,7 @@ const {
 
 const router = express.Router();
 
-router.use(verifyToken);
+// router.use(verifyToken);
 
 router
   .route("/")
@@ -43,13 +43,13 @@ router
 router
   .route("/id/:id")
   .get(restaurantIdValidator, getRestaurantById)
-  .patch(restaurantRatingValidator, addRestaurantRating);
+  .patch(verifyToken, restaurantRatingValidator, addRestaurantRating);
 
 router.route("/random").get(getRandomNearByRestaurants);
 
 router.route("/all").get(allNearbyRestaurants);
 
-router.route("/favorite/:restaurantId").patch(addToFavorite);
-router.route("/favorite").get(getFavoriteRestaurant);
+router.route("/favorite/:restaurantId").patch(verifyToken, addToFavorite);
+router.route("/favorite").get(verifyToken, getFavoriteRestaurant);
 
 module.exports = router;

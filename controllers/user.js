@@ -55,6 +55,7 @@ const register = asyncHandler(async (req, res, next) => {
     role,
     emailOtp,
     emailOtpExpire,
+    googleId: email,
   });
 
   if (!newUser) {
@@ -272,7 +273,7 @@ const verifyPasswordOtp = asyncHandler(async (req, res, next) => {
  */
 const updateUser = asyncHandler(async (req, res, next) => {
   const userId = req.user;
-  const { email, password, phone } = req.body;
+  const { email, password, phone, dateOfBirth, gender } = req.body;
   const name = req.body.name;
   const slug = req.body.slug;
 
@@ -293,7 +294,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 
   const updatedUser = await User.findByIdAndUpdate(
     { _id: userId },
-    { $set: { name, slug, email, password, phone } },
+    { $set: { name, slug, email, password, phone, dateOfBirth, gender } },
     { new: true, context: { req: req } }
   );
 
@@ -301,7 +302,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("user_update_fail"), 400));
   }
 
-  return res.status(200).json({ updatedUser });
+  return res.status(200).json({ user: updatedUser });
 });
 
 /**
@@ -311,19 +312,41 @@ const updateUser = asyncHandler(async (req, res, next) => {
  */
 const uploadUserAvatar = asyncHandler(async (req, res, next) => {
   const userId = req.user;
+  const { image, publicId } = req.query;
+  if (!image) {
+    return next(new ApiErrors("Image is required.", 400));
+  }
   const user = await User.findById(userId);
-  const image = await uploadImage(req.file, "Avatar", "avatar");
-  console.log(uploadImage);
+
   if (!user) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
-  user.avatar.url = image.url;
-  user.avatar.publicId = image.publicId;
+  user.avatar.url = image;
+  user.avatar.publicId = publicId;
   await user.save();
 
-  return res
-    .status(200)
-    .json({ status: "Success", message: req.__("profile_image_added") });
+  return res.status(200).json({ user: user });
+});
+
+/**
+ * @desc Remove user avatar
+ * @route PATCH /api/v1/avatar-remove
+ * @access protected
+ */
+const removeUserAvatar = asyncHandler(async (req, res, next) => {
+  const user = req.user;
+  const defaultImage =
+    "https://icon-icons.com/icons2/3446/PNG/512/account_profile_user_avatar_icon_219236.png";
+
+  const foundUser = await User.findById(user);
+  if (!foundUser) {
+    return next(new ApiErrors("User not found.", 404));
+  }
+
+  foundUser.avatar.url = defaultImage;
+  foundUser.avatar.publicId = "default";
+  await foundUser.save();
+  return res.status(200).json({ user: foundUser });
 });
 
 /**
@@ -332,9 +355,9 @@ const uploadUserAvatar = asyncHandler(async (req, res, next) => {
  * @access protected
  */
 const logout = asyncHandler(async (req, res, next) => {
-  const { refreshToken } = req.body;
+  const { id } = req.body;
   const user = await User.findOneAndUpdate(
-    { refreshToken },
+    { _id: id },
     { $set: { logout: new Date(), refreshToken: null, accessToken: null } },
     { new: true }
   );
@@ -404,4 +427,5 @@ module.exports = {
   uploadUserAvatar,
   logout,
   getFavoriteDetails,
+  removeUserAvatar,
 };

@@ -18,19 +18,9 @@ const verifyToken = async (req, res, next) => {
     }
     const token = authHeader.replace("Bearer ", "").trim();
 
-    // const existToken = await User.findOne({ accessToken: token });
-
-    // if (!existToken) {
-    //   return next(
-    //     new ApiErrors(
-    //       "You are not allowed to access this route, token not found",
-    //       404
-    //     )
-    //   );
-    // }
-
     jwt.verify(token, tokenSecretKey, async (error) => {
       const data = jwt.decode(token);
+      console.log(data.iat);
 
       const user = await User.findById(data.id);
 
@@ -38,7 +28,7 @@ const verifyToken = async (req, res, next) => {
         return res.status(401).json({ message: "Unauthorized access" });
       }
 
-      if (user.logout && data.iat * 1000 < new Date(user.logout).getTime()) {
+      if (data.iat * 1000 < new Date(user.logout).getTime()) {
         return next(
           new ApiErrors("Your session has expired. Please login again.", 401)
         );
