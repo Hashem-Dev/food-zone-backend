@@ -10,6 +10,7 @@
   "success": "Success",
   "error": "Error",
   "user_create_fail": "Could not create new user",
+  "user_create_success": "Your account created successfully.",
   "user_not_found": "User not found",
   "login_invalid": "Login data is not valid",
   "verify_email_first": "You have to verify your email first.",

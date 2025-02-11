@@ -3,7 +3,6 @@ dotenv.config({ path: "config.env" });
 const express = require("express");
 const morgan = require("morgan");
 const multer = require("multer");
-const path = require("path");
 const cors = require("./config/cors-config");
 const connectDB = require("./config/database-config");
 const locale = require("./config/locale-config");
@@ -23,6 +22,7 @@ const restaurantRoutes = require("./routes/restaurant");
 const mealRoutes = require("./routes/meal");
 const tokenRoutes = require("./routes/token");
 const reviewsRoutes = require("./routes/reviews");
+const notificationsRoute = require("./routes/notifications");
 
 app.use(express.json());
 app.use(cors);
@@ -31,7 +31,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-/** @language */
+/** @Language */
 app.use(locale.localization);
 app.use(locale.serverLanguage);
 
@@ -42,8 +42,8 @@ connectDB(() =>
     if (process.env.NODE_ENV === "development") {
       console.log("Development mode");
     }
-  })
-);
+  }),
+).then((result) => console.log(result));
 
 /** @Mount routes */
 app.use(`${api}/admin`, adminRoutes);
@@ -54,6 +54,7 @@ app.use(`${api}/category`, categoryRoutes);
 app.use(`${api}/meal`, mealRoutes);
 app.use(`${api}/token`, tokenRoutes);
 app.use(`${api}/reviews`, reviewsRoutes);
+app.use(`${api}/notification`, notificationsRoute);
 
 /** @ErrorHandling */
 
@@ -68,7 +69,7 @@ app.use((error, req, res, next) => {
 app.all("*", (req, res, next) => {
   const error = new ApiErrors(
     `Can not find this resource ${req.originalUrl}`,
-    404
+    404,
   );
   return next(error);
 });

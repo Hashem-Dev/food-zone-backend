@@ -8,8 +8,12 @@ const {
   accessTokenGenerator,
   refreshTokenGenerator,
 } = require("../utils/token-generator");
-const { uploadImage } = require("../services/uploader/cloudinary");
+
 const { default: slugify } = require("slugify");
+const { registerIcon, Notification } = require("../models/Notification");
+const {
+  sendNotificationToUser,
+} = require("../services/notifications/pushy_notifications");
 
 /**
  * @desc Creates a new user account
@@ -17,27 +21,41 @@ const { default: slugify } = require("slugify");
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
-  const { slug, name, email, password, adminAccessKey, vendorAccessKey } =
-    req.body;
+  const {
+    slug,
+    name,
+    email,
+    password,
+    adminAccessKey,
+    vendorAccessKey,
+    deviceToken,
+    deviceAuthKey,
+  } = req.body;
   let { isAdmin, role } = req.body;
   const existsUser = await User.findOne({ email });
   if (existsUser) {
     return next(new ApiErrors(req.__("email_exists"), 409));
   }
 
-  if (role === "admin") {
-    if (isAdmin) {
-      if (!adminAccessKey || adminAccessKey !== process.env.ADMIN_ACCESS_KEY) {
-        return next(new ApiErrors(req.__("invalid_admin_access_key"), 403));
-      }
-    } else {
-      return next(new ApiErrors(req.__("admin_register_forbidden"), 403));
+  const roleConfig = {
+    admin: {
+      accessKey: process.env.ADMIN_ACCESS_KEY,
+      errorMessage: req.__("invalid_admin_access_key"),
+    },
+    vendor: {
+      accessKey: process.env.VENDOR_ACCESS_KEY,
+      errorMessage: req.__("invalid_vendor_access_key"),
+    },
+    user: { accessKey: null, errorMessage: null },
+  };
+
+  if (roleConfig[role] && roleConfig[role].accessKey) {
+    if (
+      !req.body[`${role}AccessKey`] ||
+      req.body[`${role}AccessKey`] !== roleConfig[role].accessKey
+    ) {
+      return next(new ApiErrors(roleConfig[role].errorMessage, 403));
     }
-  } else if (role === "vendor") {
-    if (!vendorAccessKey || vendorAccessKey !== process.env.VENDOR_ACCESS_KEY) {
-      return next(new ApiErrors(req.__("invalid_vendor_access_key"), 403));
-    }
-    isAdmin = false;
   } else {
     role = "user";
     isAdmin = false;
@@ -55,20 +73,34 @@ const register = asyncHandler(async (req, res, next) => {
     role,
     emailOtp,
     emailOtpExpire,
-    googleId: email,
+    deviceToken,
+    deviceAuthKey,
   });
 
   if (!newUser) {
     return next(new ApiErrors(req.__("user_create_fail"), 400));
   }
 
-  /** @token */
-  newUser.accessToken = accessTokenGenerator(newUser);
-  newUser.refreshToken = refreshTokenGenerator(newUser);
+  if (deviceToken != null) {
+    /** @notification */
+    const notifyTitle = "Verify Account";
+    const notifyMessage = "Please visit your email to verify your account.";
 
-  await newUser.save();
+    await sendNotificationToUser(notifyTitle, notifyMessage, deviceToken);
 
-  return res.status(201).json(newUser);
+    const notification = await Notification.create({
+      user: newUser._id,
+      title: notifyTitle,
+      message: notifyMessage,
+      icon: { ...registerIcon },
+    });
+
+    await notification.save();
+    newUser.notifications.push(notification._id);
+    await newUser.save();
+  }
+
+  return res.status(201).json({ message: req.__("user_create_success") });
 });
 
 /**
@@ -88,19 +120,78 @@ const login = asyncHandler(async (req, res, next) => {
     return next(new ApiErrors(req.__("login_invalid"), 404));
   }
 
-  if (foundUser.emailOtp !== 1) {
+  if (foundUser.emailOtp > 1) {
     return next(new ApiErrors(req.__("verify_email_first"), 409));
   }
 
-  foundUser.accessToken = accessTokenGenerator(foundUser);
-  foundUser.refreshToken = refreshTokenGenerator(foundUser);
+  const [accessToken, refreshToken] = [
+    accessTokenGenerator(foundUser),
+    refreshTokenGenerator(foundUser),
+  ];
 
-  await foundUser.save();
+  let notificationsConfig = [];
 
-  foundUser.emailOtp = undefined;
-  foundUser.password = undefined;
-  foundUser.passwordOtp = undefined;
-  return res.status(200).json({ user: foundUser });
+  if (foundUser.firstLogin) {
+    notificationsConfig = [
+      {
+        title: "أهلاً بك في فود زون",
+        message: "استمتع بتصفح أفضل الوجبات والمطاعم.",
+      },
+      {
+        title: "الملف الشخصي",
+        message: "من فضلك قم بإكمال الملف الشخصي",
+      },
+    ];
+
+    const notificationPromise = notificationsConfig.map(({ title, message }) =>
+      Notification.create({
+        user: foundUser._id,
+        title: title,
+        message: message,
+        icon: { ...registerIcon },
+      })
+    );
+
+    const createNotifications = await Promise.all(notificationPromise);
+
+    await User.findByIdAndUpdate(
+      foundUser._id,
+      {
+        $push: {
+          notifications: { $each: createNotifications.map((not) => not._id) },
+        },
+      },
+      { new: true }
+    );
+
+    notificationsConfig.forEach(({ title, message }) => {
+      sendNotificationToUser(title, message, foundUser.deviceToken, next);
+    });
+  } else {
+    await sendNotificationToUser(
+      "أهلاً بعودتك",
+      "استكتشف الجديد من الوجبات والمطاعم التي تلبي ذوقك",
+      foundUser.deviceToken,
+      next
+    );
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    foundUser._id,
+    {
+      accessToken,
+      refreshToken,
+      firstLogin: false,
+      $unset: { emailOtp: 1, passwordOtp: 1, __v: 1 },
+    },
+    {
+      new: true,
+      select:
+        "-password -passwordOtp -emailOtp -__v -firstLogin -googleId -deviceAuthKey",
+    }
+  );
+
+  return res.status(200).json({ user: updatedUser });
 });
 
 /**
@@ -336,7 +427,7 @@ const uploadUserAvatar = asyncHandler(async (req, res, next) => {
 const removeUserAvatar = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const defaultImage =
-    "https://icon-icons.com/icons2/3446/PNG/512/account_profile_user_avatar_icon_219236.png";
+    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
   const foundUser = await User.findById(user);
   if (!foundUser) {
@@ -365,6 +456,13 @@ const logout = asyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
   }
+
+  await sendNotificationToUser(
+    "Good Bye!",
+    "We will miss you, Come back later.",
+    user.deviceToken,
+    next
+  );
 
   return res.status(200).json({ status: "Success", message: "logout_success" });
 });

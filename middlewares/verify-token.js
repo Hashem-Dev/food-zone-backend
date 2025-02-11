@@ -35,7 +35,6 @@ const verifyToken = async (req, res, next) => {
       }
 
       if (error) {
-        console.error(error.message);
         if (error.message.includes("invalid algorithm")) {
           return next(new ApiErrors("This token is invalid.", 401));
         } else if (error.message.includes("invalid signature")) {

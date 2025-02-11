@@ -128,7 +128,6 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
  * @access protected
  */
 const deleteAddress = asyncHandler(async (req, res, next) => {
-  console.log("ddddddddddddddddddd");
   const user = req.user;
   const { id } = req.params;
   const foundUser = await User.findById(user);

@@ -10,6 +10,7 @@
   "success": "نجاح",
   "error": "خطأ",
   "user_create_fail": "تعذر إنشاء مستخدم جديد",
+  "user_create_success": "تم إنشاء حسابك بنجاح",
   "user_not_found": "المستخدم غير موجود",
   "login_invalid": "بيانات تسجيل الدخول غير صحيحة",
   "verify_email_first": "يجب عليك تأكيد بريدك الإلكتروني أولاً.",

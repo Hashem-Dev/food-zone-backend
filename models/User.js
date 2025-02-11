@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { sendEmailChangeOtp } = require("../utils/otp-sender");
 const userSchema = new Schema(
   {
-    googleId: { type: String, unique: false },
+    googleId: { type: String, default: "google_id" },
     name: {
       en: {
         type: String,
@@ -27,22 +27,28 @@ const userSchema = new Schema(
       type: String,
       unique: [true, "E-mail already exists"],
       required: [true, "E-mail is required"],
+      index: true,
     },
     password: {
       type: String,
       required: [true, "Password is required"],
       minLength: 8,
     },
-    dateOfBirth: { type: Date, default: "" },
-    gender: { type: String, default: "" },
+    dateOfBirth: { type: Date },
+    gender: {
+      type: String,
+      default: "not_selected",
+      enum: ["male", "female", "not_selected"],
+    },
     avatar: {
       url: {
         type: String,
         default:
-          "https://cdn.icon-icons.com/icons2/3066/PNG/512/user_person_profile_avatar_icon_190943.png",
+          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
       },
-      publicId: { type: String },
+      publicId: { type: String, default: "public_id" },
     },
+    firstLogin: { type: Boolean, default: true },
     phone: { type: Number, default: "09000000000" },
     phoneVerification: { type: Boolean, default: false },
     passwordOtp: { type: Number, default: 0 },
@@ -55,12 +61,21 @@ const userSchema = new Schema(
       {
         restaurant: { type: Schema.Types.ObjectId, ref: "Restaurant" },
         isAdded: { type: Boolean, default: false },
+        default: {},
       },
     ],
     favoriteMeals: [
       {
         meals: { type: Schema.Types.ObjectId, ref: "Meal" },
         isAdded: { type: Boolean, default: false },
+        default: {},
+      },
+    ],
+    notifications: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Notification",
+        default: "user_notifications",
       },
     ],
     role: {
@@ -69,11 +84,13 @@ const userSchema = new Schema(
       enum: ["user", "vendor", "delivery", "admin", "owner"],
     },
     isAdmin: { type: Boolean, default: false },
-    accessToken: { type: String },
-    refreshToken: { type: String },
+    deviceToken: { type: String, default: "device_token" },
+    deviceAuthKey: { type: String, default: "device_auth_key" },
+    accessToken: { type: String, default: "JWT Token" },
+    refreshToken: { type: String, default: "JWT Token" },
     logout: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.set("toJSON", { virtuals: true });
@@ -109,7 +126,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
         if (update.$set.email) {
           const emailOtp = await sendEmailChangeOtp(
             update.$set.email,
-            req.language
+            req.language,
           );
           const emailOtpExpire = Date.now() + 10 * 60 * 1000;
           thisUser.emailOtp = emailOtp;
@@ -123,6 +140,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
     }
   }
 });
+
 const User = model("User", userSchema);
 
 module.exports = User;

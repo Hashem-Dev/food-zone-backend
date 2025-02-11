@@ -38,6 +38,9 @@ const {
   registerWithGoogle,
   loginWithGoogle,
 } = require("../controllers/google-authentication");
+const {
+  sendNotification,
+} = require("../services/notifications/pushy_notifications");
 
 router
   .route("/")
