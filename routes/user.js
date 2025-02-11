@@ -29,11 +29,7 @@ const {
   updateUserValidator,
 } = require("../services/validators/user");
 const { verifyToken } = require("../middlewares/verify-token");
-const multer = require("multer");
-const {
-  registerWithFacebook,
-  loginWithFacebook,
-} = require("../controllers/facebook_authentication");
+
 const {
   registerWithGoogle,
   loginWithGoogle,

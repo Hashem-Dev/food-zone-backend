@@ -9,7 +9,6 @@ const {
   refreshTokenGenerator,
 } = require("../utils/token-generator");
 
-const { default: slugify } = require("slugify");
 const { registerIcon, Notification } = require("../models/Notification");
 const {
   sendNotificationToUser,
@@ -149,7 +148,7 @@ const login = asyncHandler(async (req, res, next) => {
         title: title,
         message: message,
         icon: { ...registerIcon },
-      })
+      }),
     );
 
     const createNotifications = await Promise.all(notificationPromise);
@@ -161,7 +160,7 @@ const login = asyncHandler(async (req, res, next) => {
           notifications: { $each: createNotifications.map((not) => not._id) },
         },
       },
-      { new: true }
+      { new: true },
     );
 
     notificationsConfig.forEach(({ title, message }) => {
@@ -172,7 +171,7 @@ const login = asyncHandler(async (req, res, next) => {
       "أهلاً بعودتك",
       "استكتشف الجديد من الوجبات والمطاعم التي تلبي ذوقك",
       foundUser.deviceToken,
-      next
+      next,
     );
   }
 
@@ -188,7 +187,7 @@ const login = asyncHandler(async (req, res, next) => {
       new: true,
       select:
         "-password -passwordOtp -emailOtp -__v -firstLogin -googleId -deviceAuthKey",
-    }
+    },
   );
 
   return res.status(200).json({ user: updatedUser });
@@ -386,7 +385,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(
     { _id: userId },
     { $set: { name, slug, email, password, phone, dateOfBirth, gender } },
-    { new: true, context: { req: req } }
+    { new: true, context: { req: req } },
   );
 
   if (!updatedUser) {
@@ -450,7 +449,7 @@ const logout = asyncHandler(async (req, res, next) => {
   const user = await User.findOneAndUpdate(
     { _id: id },
     { $set: { logout: new Date(), refreshToken: null, accessToken: null } },
-    { new: true }
+    { new: true },
   );
 
   if (!user) {
@@ -461,7 +460,7 @@ const logout = asyncHandler(async (req, res, next) => {
     "Good Bye!",
     "We will miss you, Come back later.",
     user.deviceToken,
-    next
+    next,
   );
 
   return res.status(200).json({ status: "Success", message: "logout_success" });
@@ -476,8 +475,8 @@ const getFavoriteDetails = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const { detailType } = req.query;
   let selection;
-  let path;
-  if (!detailType || detailType === undefined) {
+
+  if (!detailType) {
     return next(new ApiErrors("you must provide detail type", 400));
   }
 
