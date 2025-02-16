@@ -1,8 +1,8 @@
 const { check } = require("express-validator");
 const { validationMiddleware } = require("../../middlewares/api-validation");
 
-const felidValidator = (felid, optional = false) => {
-  const validation = check(felid);
+const fieldValidator = (filed, optional = false) => {
+  const validation = check(filed);
 
   if (optional) {
     validation.optional();
@@ -10,24 +10,24 @@ const felidValidator = (felid, optional = false) => {
 
   validation
     .notEmpty()
-    .withMessage(`${felid} is required`)
+    .withMessage(`${filed} is required`)
     .isString()
     .trim()
-    .withMessage(`${felid} must be string`)
+    .withMessage(`${filed} must be string`)
     .isLength({ min: 4, max: 32 })
-    .withMessage(`${felid} must be between 4-32 character`);
+    .withMessage(`${filed} must be between 4-32 character`);
 
   return validation;
 };
 
 const createCategoryValidator = [
-  felidValidator("title.en"),
-  felidValidator("title.ar"),
+  fieldValidator("title.en"),
+  fieldValidator("title.ar"),
   validationMiddleware,
 ];
 const updateCategoryValidator = [
-  felidValidator("title.en", true),
-  felidValidator("title.ar", true),
+  fieldValidator("title.en", true),
+  fieldValidator("title.ar", true),
   validationMiddleware,
 ];
 

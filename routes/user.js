@@ -40,21 +40,21 @@ const {
 
 router
   .route("/")
-  .post(registerValidator, register)
-  .get(loginValidator, login)
-  .patch(verifyToken, updateUserValidator, updateUser);
+  .post(...registerValidator, register)
+  .get(...loginValidator, login)
+  .patch(verifyToken, ...updateUserValidator, updateUser);
 
 router
   .route("/email")
-  .post(newEmailOtpValidator, newEmailOtp)
-  .patch(verifyEmailOtpValidator, verifyEmailOtp);
+  .post(...newEmailOtpValidator, newEmailOtp)
+  .patch(...verifyEmailOtpValidator, verifyEmailOtp);
 
 router
   .route("/password")
-  .post(forgotPasswordOtpValidator, forgotPasswordOtp)
-  .patch(verifyPasswordOtpValidator, verifyPasswordOtp);
+  .post(...forgotPasswordOtpValidator, forgotPasswordOtp)
+  .patch(...verifyPasswordOtpValidator, verifyPasswordOtp);
 
-router.route("/reset-password").patch(resetPasswordValidator, resetPassword);
+router.route("/reset-password").patch(...resetPasswordValidator, resetPassword);
 
 router.route("/avatar").patch(verifyToken, uploadUserAvatar);
 router.route("/avatar-remove").patch(verifyToken, removeUserAvatar);

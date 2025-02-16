@@ -61,14 +61,12 @@ const userSchema = new Schema(
       {
         restaurant: { type: Schema.Types.ObjectId, ref: "Restaurant" },
         isAdded: { type: Boolean, default: false },
-        default: {},
       },
     ],
     favoriteMeals: [
       {
         meals: { type: Schema.Types.ObjectId, ref: "Meal" },
         isAdded: { type: Boolean, default: false },
-        default: {},
       },
     ],
     notifications: [
@@ -84,6 +82,9 @@ const userSchema = new Schema(
       enum: ["user", "vendor", "delivery", "admin", "owner"],
     },
     isAdmin: { type: Boolean, default: false },
+    groups: { type: [String], default: [], index: true },
+    totalOrders: { type: Number, default: 0 },
+    totalSpent: { type: Number, default: 0 },
     deviceToken: { type: String, default: "device_token" },
     deviceAuthKey: { type: String, default: "device_auth_key" },
     accessToken: { type: String, default: "JWT Token" },

@@ -176,7 +176,7 @@ const login = asyncHandler(async (req, res, next) => {
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    foundUser._id,
+    { _id: foundUser._id },
     {
       accessToken,
       refreshToken,

@@ -3,10 +3,10 @@ dotenv.config({ path: "config.env" });
 const express = require("express");
 const morgan = require("morgan");
 const multer = require("multer");
-const cors = require("./config/cors-config");
+const globalErrors = require("./services/global-errors");
 const connectDB = require("./config/database-config");
 const locale = require("./config/locale-config");
-const globalErrors = require("./services/global-errors");
+const cors = require("./config/cors-config");
 const ApiErrors = require("./utils/api-errors");
 
 const port = process.env.PORT || 5000;
@@ -23,6 +23,9 @@ const mealRoutes = require("./routes/meal");
 const tokenRoutes = require("./routes/token");
 const reviewsRoutes = require("./routes/reviews");
 const notificationsRoute = require("./routes/notifications");
+const paymentRoutes = require("./routes/payment");
+const ordersRoutes = require("./routes/order");
+const promotionsRoutes = require("./routes/promotion");
 
 app.use(express.json());
 app.use(cors);
@@ -43,7 +46,7 @@ connectDB(() =>
       console.log("Development mode");
     }
   }),
-).then((result) => console.log(result));
+);
 
 /** @Mount routes */
 app.use(`${api}/admin`, adminRoutes);
@@ -55,6 +58,9 @@ app.use(`${api}/meal`, mealRoutes);
 app.use(`${api}/token`, tokenRoutes);
 app.use(`${api}/reviews`, reviewsRoutes);
 app.use(`${api}/notification`, notificationsRoute);
+app.use(`${api}/payment`, paymentRoutes);
+app.use(`${api}/order`, ordersRoutes);
+app.use(`${api}/promotion`, promotionsRoutes);
 
 /** @ErrorHandling */
 
