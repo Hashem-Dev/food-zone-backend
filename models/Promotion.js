@@ -41,7 +41,7 @@ const promotionSchema = new Schema(
     usedCount: { type: Number, default: 0 },
     isActive: { type: Boolean, default: false, index: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const Promotion = model("Promotion", promotionSchema);
@@ -165,7 +165,7 @@ const checkTimeCondition = (actualTime, operator, expectedHours) => {
 };
 const checkCategoryCondition = (items, operator, expectedCategories) => {
   const actualCategories = items.map((item) => item);
-  console.log(actualCategories);
+
   switch (operator) {
     case "in":
       return expectedCategories.some((cat) => actualCategories.includes(cat));

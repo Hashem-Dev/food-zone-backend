@@ -43,7 +43,6 @@ const applyPromotion = async (req, res, next) => {
     };
 
     const validationResult = validatePromotion(promotion, context);
-    console.log(validationResult);
     if (!validationResult.isValid) {
       return res.status(400).json({
         error: "Conditions not met",
@@ -55,7 +54,7 @@ const applyPromotion = async (req, res, next) => {
 
     await Promotion.updateOne(
       { _id: promotion._id },
-      { $inc: { usedCount: 1 } },
+      { $inc: { usedCount: 1 } }
     );
 
     res.json({

@@ -362,7 +362,6 @@ const addMealToFavorite = asyncHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new ApiErrors("User not found.", 404));
   }
-  console.log(mealId);
 
   const foundMeal = await Meal.findById(mealId);
   if (!foundMeal) {

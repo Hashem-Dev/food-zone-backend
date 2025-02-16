@@ -69,9 +69,8 @@ async function sendRegisterOtp(email, lang) {
 
   transporter.sendMail(mailOptions, (error) => {
     if (error) {
-      return console.log("Error: " + error);
+      return Error("Error: " + error);
     }
-    console.log(`Message sent successfully to ${email}`);
   });
   return otpEmail;
 }
@@ -137,9 +136,8 @@ async function sendPasswordOtp(email, lang) {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      return console.log("Error: " + error);
+      return Error("Error: " + error);
     }
-    console.log(`Message sent successfully to ${email}`);
   });
   return otpPassword;
 }
@@ -203,9 +201,9 @@ async function sendEmailChangeOtp(email, lang) {
 
   transporter.sendMail(mailOptions, (error) => {
     if (error) {
-      return console.log("Error: " + error);
+      return Error("Error: " + error);
     }
-    console.log(`Message sent successfully to ${email}`);
+    return;
   });
 
   return otpEmail;

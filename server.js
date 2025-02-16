@@ -41,11 +41,12 @@ app.use(locale.serverLanguage);
 /** @Connect to MongoDB Database */
 connectDB(() =>
   app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
     if (process.env.NODE_ENV === "development") {
-      console.log("Development mode");
+      console.log("Start In Development Mode");
+    } else {
+      console.log("Start In Production Mode");
     }
-  }),
+  })
 );
 
 /** @Mount routes */
@@ -75,7 +76,7 @@ app.use((error, req, res, next) => {
 app.all("*", (req, res, next) => {
   const error = new ApiErrors(
     `Can not find this resource ${req.originalUrl}`,
-    404,
+    404
   );
   return next(error);
 });

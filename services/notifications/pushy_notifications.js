@@ -25,12 +25,10 @@ async function sendNotificationToUser(title, message, deviceToken, next) {
   pushyAPI.sendPushNotification(data, to, options, function (err, id) {
     // Log errors to console
     if (err) {
-      console.log("Fatal Error", err);
       return next(
-        new ApiErrors(`Failed to send notification for ${deviceToken}`),
+        new ApiErrors(`Failed to send notification for ${deviceToken}`)
       );
     }
     // Log success
-    console.log("Push sent successfully! (ID: " + id + ")");
   });
 }

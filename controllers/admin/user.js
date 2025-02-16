@@ -33,7 +33,6 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
  */
 const deleteUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
 
   const user = await User.findById(id);
   if (!user) {

@@ -20,8 +20,6 @@ const verifyToken = async (req, res, next) => {
 
     jwt.verify(token, tokenSecretKey, async (error) => {
       const data = jwt.decode(token);
-      console.log(data.iat);
-
       const user = await User.findById(data.id);
 
       if (!user) {

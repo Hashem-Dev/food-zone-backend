@@ -69,7 +69,6 @@ class ApiFeatures {
   search() {
     if (this.queryString.keyword) {
       let searchQuery = {};
-      console.log(this.queryString.keyword);
       searchQuery.$or = [
         { title: { $regex: `${this.queryString.keyword}`, $options: "i" } },
         { description: { $regex: this.queryString.keyword, $options: "i" } },
