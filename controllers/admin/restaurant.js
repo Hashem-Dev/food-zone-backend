@@ -5,7 +5,7 @@ const Restaurant = require("../../models/Restaurant");
 const ApiSuccess = require("../../utils/api-success");
 
 /**
- * @desc Accept or reject vendor restaurant
+ * @description Accept or reject vendor restaurant
  * @route PATCH /api/v1/admin/restaurant/:restaurant
  * @access protected
  */
@@ -50,7 +50,7 @@ const verifyVendorRestaurant = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all restaurant
+ * @description Get all restaurant
  * @route GET /api/v1/admin/restaurant
  * @access protected
  */

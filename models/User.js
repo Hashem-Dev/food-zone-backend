@@ -85,13 +85,14 @@ const userSchema = new Schema(
     groups: { type: [String], default: [], index: true },
     totalOrders: { type: Number, default: 0 },
     totalSpent: { type: Number, default: 0 },
+    promotions: [{ type: Schema.Types.ObjectId, ref: "Promotion" }],
     deviceToken: { type: String, default: "device_token" },
     deviceAuthKey: { type: String, default: "device_auth_key" },
     accessToken: { type: String, default: "JWT Token" },
     refreshToken: { type: String, default: "JWT Token" },
     logout: { type: Date },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 userSchema.set("toJSON", { virtuals: true });
@@ -127,7 +128,7 @@ userSchema.pre("findOneAndUpdate", async function (next) {
         if (update.$set.email) {
           const emailOtp = await sendEmailChangeOtp(
             update.$set.email,
-            req.language,
+            req.language
           );
           const emailOtpExpire = Date.now() + 10 * 60 * 1000;
           thisUser.emailOtp = emailOtp;

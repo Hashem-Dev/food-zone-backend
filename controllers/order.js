@@ -2,12 +2,13 @@ const asyncHandler = require("express-async-handler");
 
 const User = require("../models/User");
 const Order = require("../models/Order");
-const { Notification, registerIcon } = require("../models/Notification");
+const { Notification, orderPlacedIcon } = require("../models/Notification");
 const ApiErrors = require("../utils/api-errors");
 const {
   sendNotificationToUser,
 } = require("../services/notifications/pushy_notifications");
 const Meal = require("../models/Meals");
+const { Promotion } = require("../models/Promotion");
 
 const addOrder = asyncHandler(async (req, res, next) => {
   //const session = await mongoose.startSession();
@@ -29,19 +30,20 @@ const addOrder = asyncHandler(async (req, res, next) => {
       discount,
       couponCode,
       cancellationReason,
+      promotions,
     } = req.body;
 
     for (const item of items) {
       const existMeal = await Meal.findById(item.meal);
       if (!existMeal) {
         return next(
-          new ApiErrors(`This meal with ID:${item.meal} does not exist.`, 404),
+          new ApiErrors(`This meal with ID:${item.meal} does not exist.`, 404)
         );
       }
 
       if (item.additives && item.additives.length > 0) {
         const mealAdditives = existMeal.additives.map((addi) =>
-          addi._id.toString(),
+          addi._id.toString()
         );
 
         for (const additive of item.additives) {
@@ -49,8 +51,8 @@ const addOrder = asyncHandler(async (req, res, next) => {
             return next(
               new ApiErrors(
                 `This additive with ID:${additive} does not exist.`,
-                404,
-              ),
+                404
+              )
             );
           }
         }
@@ -72,8 +74,9 @@ const addOrder = asyncHandler(async (req, res, next) => {
           discount,
           couponCode,
           cancellationReason,
+          promotions,
         },
-      ],
+      ]
 
       // { session },
     );
@@ -83,6 +86,17 @@ const addOrder = asyncHandler(async (req, res, next) => {
       return next(new ApiErrors("Failed to create this order", 400));
     }
 
+    for (const id of promotions) {
+      const updatePromotion = await Promotion.findByIdAndUpdate(
+        { _id: id },
+        { $inc: { usedCount: 1, maxUses: -1 } }
+      );
+      if (!updatePromotion) {
+        return next(
+          new ApiErrors(`Update promotion with id: ${id} has been failed.`)
+        );
+      }
+    }
     const notificationTitle = "Order Successful";
     const notificationMessage = `Order ${newOrder[0].orderNumber} has been placed successfully.`;
     const notificationOrder = await Notification.create(
@@ -91,11 +105,11 @@ const addOrder = asyncHandler(async (req, res, next) => {
           user,
           title: notificationTitle,
           message: notificationMessage,
-          icon: { ...registerIcon },
-          priority: 1,
+          icon: { ...orderPlacedIcon },
+          priority: 5,
           type: "success",
         },
-      ],
+      ]
       // { session },
     );
 
@@ -106,7 +120,7 @@ const addOrder = asyncHandler(async (req, res, next) => {
         notificationTitle,
         notificationMessage,
         existUser.deviceToken,
-        next,
+        next
       );
     }
 
@@ -116,10 +130,11 @@ const addOrder = asyncHandler(async (req, res, next) => {
         $push: {
           notifications: notificationOrder[0]._id,
           orders: newOrder[0]._id,
+          promotions: { $each: promotions },
         },
-        $inc: { totalOrders: 1, totalSpent: newOrder.total },
+        $inc: { totalOrders: 1 },
       },
-      { new: true },
+      { new: true }
     );
     if (!updatedUser) {
       return next(new ApiErrors("Failed to update user", 400));

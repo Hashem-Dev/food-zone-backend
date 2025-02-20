@@ -8,7 +8,7 @@ const {
 } = require("../utils/token-generator");
 
 /**
- * @desc Create new user with Facebook
+ * @description Create new user with Facebook
  * @route POST /api/v1/auth/facebook
  * @access public
  */
@@ -45,7 +45,7 @@ const registerWithFacebook = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Login with Facebook
+ * @description Login with Facebook
  * @route GET /api/v1/auth/facebook
  * @access public
  */

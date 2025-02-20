@@ -4,7 +4,7 @@ const ApiErrors = require("../utils/api-errors");
 const { default: mongoose } = require("mongoose");
 
 /**
- * @desc Get all reviews for specific product
+ * @description Get all reviews for specific product
  * @route GET /api/v1/reviews/product
  * @access Protected
  */

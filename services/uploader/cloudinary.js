@@ -8,7 +8,7 @@ cloudinary.config({
 });
 
 /**
- * @desc Upload user images by cloudinary
+ * @description Upload user images by cloudinary
  * @param {*} file
  * @param {*} folder
  * @param {*} prefix

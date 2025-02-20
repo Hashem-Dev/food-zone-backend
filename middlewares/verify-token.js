@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const tokenSecretKey = process.env.SECRET_KEY_TOKEN;
 
 /**
- * @desc Middleware to verify users token
+ * @description Middleware to verify users token
  */
 const verifyToken = async (req, res, next) => {
   try {
@@ -61,7 +61,7 @@ const verifyToken = async (req, res, next) => {
 };
 
 /**
- * @desc Middleware to refresh access token
+ * @description Middleware to refresh access token
  */
 const refreshToken = asyncHandler(async (token, req, res, next) => {
   const data = jwt.decode(token);
@@ -109,7 +109,7 @@ const refreshToken = asyncHandler(async (token, req, res, next) => {
 });
 
 /**
- * @desc Middleware to verify admin token
+ * @description Middleware to verify admin token
  */
 const verifyAdminToken = async (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers["Authorization"];
@@ -132,7 +132,7 @@ const verifyAdminToken = async (req, res, next) => {
 };
 
 /**
- * @desc Middleware to verify vendor token
+ * @description Middleware to verify vendor token
  */
 const verifyVendorToken = async (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers["Authorization"];

@@ -18,7 +18,7 @@ function shuffleArray(array) {
 }
 
 /**
- * @desc Create new vendor restaurant
+ * @description Create new vendor restaurant
  * @route POST /api/v1/restaurant/
  * @access protected
  */
@@ -60,7 +60,7 @@ const addRestaurant = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all restaurant belong to the specific vendor
+ * @description Get all restaurant belong to the specific vendor
  * @route GET /api/v1/restaurant
  * @access protected
  */
@@ -92,7 +92,7 @@ const getRestaurantVendor = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get a specific restaurant
+ * @description Get a specific restaurant
  * @route GET /api/v1/restaurant/:id
  * @access protected
  */
@@ -114,7 +114,7 @@ const getRestaurantById = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get nearby random restaurant
+ * @description Get nearby random restaurant
  * @route GET /api/v1/restaurant/:lang/:lat
  * @access protected
  */
@@ -178,7 +178,7 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all nearby restaurants
+ * @description Get all nearby restaurants
  * @route GET /api/v1/restaurant/all
  * @access protected
  */
@@ -242,7 +242,7 @@ const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Rating a specific restaurant
+ * @description Rating a specific restaurant
  * @route PATCH /api/v1/restaurant/:id
  * @access protected
  */
@@ -311,7 +311,7 @@ const addRestaurantRating = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Add restaurant to user favorite
+ * @description Add restaurant to user favorite
  * @route PATCH /api/v1/restaurant/favorite
  * @access Protected
  */
@@ -357,7 +357,7 @@ const addToFavorite = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get favorite restaurants for user
+ * @description Get favorite restaurants for user
  * @route GET /api/v1/restaurant/favorite
  * @access Protected
  */

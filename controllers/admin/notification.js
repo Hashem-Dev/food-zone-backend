@@ -8,7 +8,7 @@ const {
 const { Schema } = require("mongoose");
 
 /**
- * @description Send notification to specific user
+ * @descriptionription Send notification to specific user
  * @route POST /api/v1/admin/notification/user
  * @access protected
  * */
@@ -25,14 +25,14 @@ const sendNotificationToSpecificUser = asyncHandler(async (req, res, next) => {
   });
   if (!notification) {
     return next(
-      new ApiErrors("Failed to send notification, user not found.", 404),
+      new ApiErrors("Failed to send notification, user not found.", 404)
     );
   }
 
   const updatedUser = await User.findByIdAndUpdate(
     { _id: user },
     { $push: { notifications: notification._id } },
-    { new: true },
+    { new: true }
   );
 
   if (!updatedUser) {
@@ -46,7 +46,7 @@ const sendNotificationToSpecificUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @description Send notification to all users
+ * @descriptionription Send notification to all users
  * @route POST /api/v1/admin/notification/all-users
  * @access protected
  * */
@@ -58,7 +58,7 @@ const sendNotificationToUsers = asyncHandler(async (req, res, next) => {
     .filter((token) => !!token);
   if (deviceTokens.length === 0) {
     return next(
-      new ApiErrors("No device tokens found for send notification.", 404),
+      new ApiErrors("No device tokens found for send notification.", 404)
     );
   }
   const newNotification = await Notification.create({
@@ -71,7 +71,7 @@ const sendNotificationToUsers = asyncHandler(async (req, res, next) => {
   const updatedUsers = await User.updateMany(
     {},
     { $push: { notifications: newNotification._id } },
-    { new: true },
+    { new: true }
   );
   if (!newNotification || !updatedUsers) {
     return next(new ApiErrors("Failed to send notification.", 404));

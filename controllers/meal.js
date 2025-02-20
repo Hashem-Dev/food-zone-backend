@@ -11,7 +11,7 @@ const { uploadImage } = require("../services/uploader/cloudinary");
 const { json } = require("express");
 
 /**
- * @desc Add new meal
+ * @description Add new meal
  * @route POST /api/v1/meal/
  * @access protected
  */
@@ -94,7 +94,7 @@ const addMealImages = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get meals that's belong to specific category
+ * @description Get meals that's belong to specific category
  * @route GET /api/v1/meal/:category
  * @access public
  */
@@ -122,7 +122,7 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get meals that's belong to specific restaurant
+ * @description Get meals that's belong to specific restaurant
  * @route GET /api/v1/meal/restaurant/:restaurant
  * @access public
  */
@@ -159,7 +159,7 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get a specific meal
+ * @description Get a specific meal
  * @route GET /api/v1/meal/:id
  * @access public
  */
@@ -179,7 +179,7 @@ const getSpecificMeal = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get random meals
+ * @description Get random meals
  * @route GET /api/v1/meal/random
  * @access public
  */
@@ -278,7 +278,7 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Add meal rating
+ * @description Add meal rating
  * @route PATCH /api/v1/meal/:id
  * @access protected
  */
@@ -340,7 +340,7 @@ const addMealRating = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Delete a specific meal
+ * @description Delete a specific meal
  * @route DELETE /api/v1/meal/:id
  * @access protected
  */
@@ -350,7 +350,7 @@ const deleteSpecificMeal = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Add meal to user favorite
+ * @description Add meal to user favorite
  * @route PATCH /api/v1/meal/favorite/
  * @access protected
  */
@@ -390,7 +390,7 @@ const addMealToFavorite = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all favorite meals
+ * @description Get all favorite meals
  * @route GET /api/v1/meals/favorite
  * @access protected
  */

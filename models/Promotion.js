@@ -20,6 +20,7 @@ const conditionSchema = new Schema({
     required: true,
     enum: [">", "<", "==", ">=", "<=", "in", "notIn"],
   },
+  conditionTitle: { type: String, required: true },
   value: Schema.Types.Mixed,
 });
 

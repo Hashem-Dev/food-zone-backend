@@ -36,8 +36,9 @@ const orderSchema = new Schema(
     couponCode: { type: String, default: "coupon_code" },
     deliveryDate: { type: Date, default: Date.now() },
     cancellationReason: { type: String, default: "" },
+    promotions: [{ type: Schema.Types.ObjectId, ref: "Promotion" }],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 orderSchema.pre("save", function (next) {

@@ -7,7 +7,7 @@ const ApiSuccess = require("../utils/api-success");
 const { uploadImage } = require("../services/uploader/cloudinary");
 
 /**
- * @desc Create category
+ * @description Create category
  * @route POST /api/v1/category/
  * @access protected
  */
@@ -41,7 +41,7 @@ const createCategory = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get random category
+ * @description Get random category
  * @route GET /api/v1/category/
  * @access public
  */
@@ -61,7 +61,7 @@ const getRandomCategory = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get all categories
+ * @description Get all categories
  * @route GET /api/v1/category/all
  * @access public
  */
@@ -84,7 +84,7 @@ const allCategories = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Update a specific category
+ * @description Update a specific category
  * @route PATCH /api/v1/category/:id
  * @access protected
  */
@@ -120,7 +120,7 @@ const updateCategory = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Delete category
+ * @description Delete category
  * @route DELETE /api/v1/category/:id
  * @access protected
  */

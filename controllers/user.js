@@ -15,7 +15,7 @@ const {
 } = require("../services/notifications/pushy_notifications");
 
 /**
- * @desc Creates a new user account
+ * @description Creates a new user account
  * @route POST /api/v1/users/
  * @access public
  */
@@ -103,7 +103,7 @@ const register = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Login user with email and password
+ * @description Login user with email and password
  * @route GET /api/v1/users/
  * @access public
  */
@@ -148,7 +148,7 @@ const login = asyncHandler(async (req, res, next) => {
         title: title,
         message: message,
         icon: { ...registerIcon },
-      }),
+      })
     );
 
     const createNotifications = await Promise.all(notificationPromise);
@@ -160,7 +160,7 @@ const login = asyncHandler(async (req, res, next) => {
           notifications: { $each: createNotifications.map((not) => not._id) },
         },
       },
-      { new: true },
+      { new: true }
     );
 
     notificationsConfig.forEach(({ title, message }) => {
@@ -171,7 +171,7 @@ const login = asyncHandler(async (req, res, next) => {
       "أهلاً بعودتك",
       "استكتشف الجديد من الوجبات والمطاعم التي تلبي ذوقك",
       foundUser.deviceToken,
-      next,
+      next
     );
   }
 
@@ -187,14 +187,14 @@ const login = asyncHandler(async (req, res, next) => {
       new: true,
       select:
         "-password -passwordOtp -emailOtp -__v -firstLogin -googleId -deviceAuthKey",
-    },
+    }
   );
 
   return res.status(200).json({ user: updatedUser });
 });
 
 /**
- * @desc Verify email otp
+ * @description Verify email otp
  * @route PATCH /api/v1/users/email
  * @access public
  */
@@ -230,7 +230,7 @@ const verifyEmailOtp = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Send new email with verification code
+ * @description Send new email with verification code
  * @route POST /api/v1/users/email
  * @access public
  */
@@ -269,7 +269,7 @@ const newEmailOtp = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Send a reset password verification code
+ * @description Send a reset password verification code
  * @route POST /api/v1/users/password
  * @access public
  */
@@ -295,7 +295,7 @@ const forgotPasswordOtp = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Reset password
+ * @description Reset password
  * @route PATH /api/v1/users/reset
  * @access public
  */
@@ -321,7 +321,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Verify OTP password
+ * @description Verify OTP password
  * @route PATCH /api/v1/users/password
  * @access public
  */
@@ -357,7 +357,7 @@ const verifyPasswordOtp = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Update user data
+ * @description Update user data
  * @route PATCH /api/v1/users/
  * @access protected
  */
@@ -385,7 +385,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(
     { _id: userId },
     { $set: { name, slug, email, password, phone, dateOfBirth, gender } },
-    { new: true, context: { req: req } },
+    { new: true, context: { req: req } }
   );
 
   if (!updatedUser) {
@@ -396,7 +396,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Upload user avatar
+ * @description Upload user avatar
  * @route POST /api/v1/users/avatar
  * @access protected
  */
@@ -419,7 +419,7 @@ const uploadUserAvatar = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Remove user avatar
+ * @description Remove user avatar
  * @route PATCH /api/v1/avatar-remove
  * @access protected
  */
@@ -440,7 +440,7 @@ const removeUserAvatar = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Logout user
+ * @description Logout user
  * @route POST /api/v1/users/logout
  * @access protected
  */
@@ -449,7 +449,7 @@ const logout = asyncHandler(async (req, res, next) => {
   const user = await User.findOneAndUpdate(
     { _id: id },
     { $set: { logout: new Date(), refreshToken: null, accessToken: null } },
-    { new: true },
+    { new: true }
   );
 
   if (!user) {
@@ -460,14 +460,14 @@ const logout = asyncHandler(async (req, res, next) => {
     "Good Bye!",
     "We will miss you, Come back later.",
     user.deviceToken,
-    next,
+    next
   );
 
   return res.status(200).json({ status: "Success", message: "logout_success" });
 });
 
 /**
- * @desc Get all user favorite with details
+ * @description Get all user favorite with details
  * @route GET /api/v1/user/favorite
  * @access protected
  */

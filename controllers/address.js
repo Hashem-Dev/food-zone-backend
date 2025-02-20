@@ -6,7 +6,7 @@ const ApiFeatures = require("../utils/api-features");
 const ApiSuccess = require("../utils/api-success");
 
 /**
- * @desc Add new address for user
+ * @description Add new address for user
  * @route POST /api/v1/address/
  * @access protected
  */
@@ -56,7 +56,7 @@ const addAddress = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get user addresses
+ * @description Get user addresses
  * @route GET /api/v1/address/
  * @access protected
  */
@@ -83,7 +83,7 @@ const getAllAddress = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Set default address
+ * @description Set default address
  * @route PATCH /api/v1/address/:id/default
  * @access protected
  */
@@ -123,7 +123,7 @@ const setDefaultAddress = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Deletes a specific address
+ * @description Deletes a specific address
  * @router DELETE /api/v1/address/:id
  * @access protected
  */
@@ -154,7 +154,7 @@ const deleteAddress = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Update a specific address
+ * @description Update a specific address
  * @route PATCH /api/v1/address/:id
  * @access protected
  */
@@ -181,7 +181,7 @@ const updateAddress = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Get nearest locations
+ * @description Get nearest locations
  * @route /nearest
  * @access protected
  */

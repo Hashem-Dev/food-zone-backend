@@ -51,7 +51,7 @@ const getUserNotifications = asyncHandler(async (req, res, next) => {
         today: [
           { $match: { createdAt: { $gte: todayStart, $lte: todayEnd } } },
           { $project: { __v: 0, updatedAt: 0 } },
-          { $sort: { isRead: 1, priority: 1 } },
+          { $sort: { isRead: 1, priority: -1 } },
           { $limit: 10 },
         ],
 
@@ -60,20 +60,20 @@ const getUserNotifications = asyncHandler(async (req, res, next) => {
             $match: { createdAt: { $gte: yesterdayStart, $lte: yesterdayEnd } },
           },
           { $project: { __v: 0, updatedAt: 0 } },
-          { $sort: { isRead: 1, priority: 1 } },
+          { $sort: { isRead: 1, priority: -1 } },
           { $limit: 10 },
         ],
 
         lastWeek: [
           { $match: { createdAt: { $gte: lastWeekStart, $lte: lastWeekEnd } } },
           { $project: { __v: 0, updatedAt: 0 } },
-          { $sort: { isRead: 1, priority: 1 } },
+          { $sort: { isRead: 1, priority: -1 } },
           { $limit: 10 },
         ],
         olderThanWeek: [
           { $match: { createdAt: { $lt: lastWeekStart } } },
           { $project: { __v: 0, updatedAt: 0 } },
-          { $sort: { isRead: 1, priority: 1 } },
+          { $sort: { isRead: 1, priority: -1 } },
           { $limit: 10 },
         ],
       },
@@ -100,7 +100,7 @@ const deleteSpecificNotification = asyncHandler(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(
     user,
     { $pull: { notifications: notification } },
-    { new: true },
+    { new: true }
   );
 
   if (!updatedUser) {
@@ -110,7 +110,7 @@ const deleteSpecificNotification = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @description Mark specific notification as read
+ * @descriptionription Mark specific notification as read
  * @route PATCH /api/v1/notification/user
  * @access protected
  * */
@@ -121,7 +121,7 @@ const readSpecificNotification = asyncHandler(async (req, res, next) => {
   const updatedNotification = await Notification.findByIdAndUpdate(
     { _id: notification, user: user },
     { $set: { isRead: true } },
-    { new: true },
+    { new: true }
   );
 
   if (!updatedNotification) {
@@ -132,7 +132,7 @@ const readSpecificNotification = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @description Read all notifications related to user
+ * @descriptionription Read all notifications related to user
  * @route PATCH /api/v1/notification/read-all
  * @access protected
  * */
@@ -148,7 +148,7 @@ const readAllNotifications = asyncHandler(async (req, res, next) => {
   const updatedNotifications = await Notification.updateMany(
     { user: user },
     { $set: { isRead: true } },
-    { new: true },
+    { new: true }
   );
   if (!updatedNotifications) {
     return next(new ApiErrors("Notifications was not found", 404));
@@ -157,7 +157,7 @@ const readAllNotifications = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @description Delete all notifications related to user
+ * @descriptionription Delete all notifications related to user
  * @route DELETE /api/v1/notification/delete-all
  * @access protected
  * */
@@ -170,7 +170,7 @@ const deleteAllNotificationUser = asyncHandler(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(
     user,
     { $set: { notifications: [] } },
-    { new: true },
+    { new: true }
   );
   if (!updatedUser) {
     return next(new ApiErrors("Update user\'s notifications was failed.", 404));

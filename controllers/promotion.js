@@ -6,7 +6,7 @@ const {
   Promotion,
 } = require("../models/Promotion");
 const ApiErrors = require("../utils/api-errors");
-const expressAsyncHandler = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
 
 /**
@@ -15,7 +15,7 @@ const mongoose = require("mongoose");
  * @access protected
  */
 
-const applyPromotion = async (req, res, next) => {
+const applyPromotion = asyncHandler(async (req, res, next) => {
   try {
     const { promoCode, orderData } = req.body;
     const userId = req.user;
@@ -45,27 +45,23 @@ const applyPromotion = async (req, res, next) => {
     const validationResult = validatePromotion(promotion, context);
     if (!validationResult.isValid) {
       return res.status(400).json({
-        error: "Conditions not met",
+        error: "Conditions not met, check the promotion\'s conditions",
         unmetConditions: validationResult.unmetConditions,
       });
     }
 
     const discount = calculateDiscount(promotion, orderData.total);
 
-    await Promotion.updateOne(
-      { _id: promotion._id },
-      { $inc: { usedCount: 1 } }
-    );
-
     res.json({
-      success: true,
+      promotion: promotion._id,
+      message: "Promotion applied successfully, Enjoy!",
       discount,
       newTotal: orderData.total - discount,
     });
   } catch (error) {
     return next(error);
   }
-};
+});
 
 /**
  * @description Get specific promotion
@@ -73,7 +69,7 @@ const applyPromotion = async (req, res, next) => {
  * @access protected
  * */
 
-const specificPromotion = expressAsyncHandler(async (req, res, next) => {
+const specificPromotion = asyncHandler(async (req, res, next) => {
   const { id } = req.query;
 
   if (!id || !mongoose.isValidObjectId(id)) {
@@ -86,7 +82,36 @@ const specificPromotion = expressAsyncHandler(async (req, res, next) => {
   }
   return res.status(200).json(existPromotion);
 });
+
+/**
+ * @description Get all available promotions
+ * @route GET /api/v1/promotions/all
+ * @access protected
+ */
+
+const allPromotions = asyncHandler(async (req, res, next) => {
+  const promotions = await Promotion.aggregate([
+    {
+      $match: { isActive: true },
+    },
+    {
+      $project: {
+        createdAt: 0,
+        updatedAt: 0,
+        __v: 0,
+      },
+    },
+  ]);
+
+  if (!promotions) {
+    return next(new ApiErrors("No promotions found", 404));
+  }
+
+  return res.status(200).json(promotions);
+});
+
 module.exports = {
   applyPromotion,
   specificPromotion,
+  allPromotions,
 };

@@ -4,7 +4,7 @@ const ApiErrors = require("../../utils/api-errors");
 const ApiFeatures = require("../../utils/api-features");
 
 /**
- * @desc Get all users
+ * @description Get all users
  * @route GET /api/v1/admin/users/
  * @access protected
  */
@@ -27,7 +27,7 @@ const getAllUsers = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Delete a specific user
+ * @description Delete a specific user
  * @route DELETE /api/v1/admin/users/:id
  * @access protected
  */

@@ -11,11 +11,11 @@ const notificationSchema = new Schema(
     message: { type: String, required: true, maxLength: 500 },
     icon: {
       codePoint: { type: Number, required: true },
-      fontFamily: { type: String, required: true },
-      fontPackage: { type: String, required: true },
+      fontFamily: { type: String, default: "SolarIconsOutline" },
+      fontPackage: { type: String, default: "solar_icons" },
       color: {
         type: String,
-        default: "ff6347",
+        default: "13c296",
         match: /^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/,
       },
     },
@@ -38,8 +38,19 @@ notificationSchema.index({ user: 1, isRead: 1 });
 const Notification = model("Notification", notificationSchema);
 
 const registerIcon = {
-  codePoint: 60862,
-  fontFamily: "SolarIconsOutline",
-  fontPackage: "solar_icons",
+  codePoint: 60727,
 };
-module.exports = { Notification, registerIcon };
+
+const orderPlacedIcon = { codePoint: 60464 };
+
+const orderConfirmedIcon = { codePoint: 60479 };
+
+const orderCanceledIcon = { codePoint: 60887, color: "ff6347" };
+
+module.exports = {
+  Notification,
+  registerIcon,
+  orderPlacedIcon,
+  orderConfirmedIcon,
+  orderCanceledIcon,
+};

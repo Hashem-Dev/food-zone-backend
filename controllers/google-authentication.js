@@ -8,7 +8,7 @@ const {
 const { default: slugify } = require("slugify");
 
 /**
- * @desc Create new user with Google authentication
+ * @description Create new user with Google authentication
  * @route POST /api/v1/auth/google
  * @access public
  */
@@ -42,7 +42,7 @@ const registerWithGoogle = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc Login user with Google authentication
+ * @description Login user with Google authentication
  * @route GET /api/v1/auth/google
  * @access public
  */
