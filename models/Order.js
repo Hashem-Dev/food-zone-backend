@@ -15,14 +15,11 @@ const orderSchema = new Schema(
     totalPrice: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["pending", "paid", "delivered", "cancelled"],
+      enum: ["pending", "paid", "onWay", "delivered", "cancelled"],
       default: "pending",
       index: true,
     },
-    paymentIntentId: {
-      type: String,
-      required: true,
-    },
+    paymentIntentId: { type: String },
     shippingAddress: {
       type: Schema.Types.ObjectId,
       ref: "Address",
@@ -33,10 +30,10 @@ const orderSchema = new Schema(
     shippingCost: { type: Number, required: true },
     orderNumber: { type: String, unique: true, required: true },
     discount: { type: Number, default: 0 },
-    couponCode: { type: String, default: "coupon_code" },
-    deliveryDate: { type: Date, default: Date.now() },
+    deliveryDate: { type: Date },
     cancellationReason: { type: String, default: "" },
     promotions: [{ type: Schema.Types.ObjectId, ref: "Promotion" }],
+    rating: { type: Number, default: 1.0, min: 1, max: 5 },
   },
   { timestamps: true }
 );

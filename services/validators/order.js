@@ -14,7 +14,7 @@ const newOrderValidator = [
     }
     const totalPrice = req.body.items.reduce(
       (sum, item) => sum + item.quantity * item.price,
-      0,
+      0
     );
 
     if (value !== totalPrice) {
@@ -23,9 +23,7 @@ const newOrderValidator = [
     req.body.totalPrice = totalPrice;
     return true;
   }),
-  check("paymentIntentId")
-    .notEmpty()
-    .withMessage("Payment Intent ID is required"),
+
   check("shippingAddress")
     .notEmpty()
     .withMessage("Shipping Address is required")
@@ -35,4 +33,9 @@ const newOrderValidator = [
   validationMiddleware,
 ];
 
-module.exports = { newOrderValidator };
+const updateOrderStatusValidator = [
+  check("status").notEmpty().withMessage("order status required."),
+  check("orderId").isMongoId().withMessage("order id not valid"),
+  validationMiddleware,
+];
+module.exports = { newOrderValidator, updateOrderStatusValidator };
