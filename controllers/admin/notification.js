@@ -8,7 +8,7 @@ const {
 const { Schema } = require("mongoose");
 
 /**
- * @descriptionription Send notification to specific user
+ * @description Send notification to specific user
  * @route POST /api/v1/admin/notification/user
  * @access protected
  * */
@@ -46,7 +46,7 @@ const sendNotificationToSpecificUser = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @descriptionription Send notification to all users
+ * @description Send notification to all users
  * @route POST /api/v1/admin/notification/all-users
  * @access protected
  * */

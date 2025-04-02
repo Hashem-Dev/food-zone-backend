@@ -15,14 +15,15 @@ const {
 /**@endpoints */
 const {
   addMeal,
-  getCategoryMeals,
-  getRestaurantMeals,
-  getSpecificMeal,
-  getRandomMeals,
+  restaurantMeals,
+  specificMeal,
+  randomMeals,
   addMealRating,
   addMealImages,
   addMealToFavorite,
-  getAllFavoriteMeals,
+  allFavoriteMeals,
+  categoryMeals,
+  mealsOffer,
 } = require("../controllers/meal");
 
 /** @token validation  */
@@ -40,22 +41,22 @@ router
     upload.array("images", 5),
     addMealImages
   )
-  .get(getRandomMeals);
+  .get(randomMeals);
 
-router
-  .route("/category/:category")
-  .get(categoryMealValidator, getCategoryMeals);
+router.route("/offers").get(mealsOffer);
+
+router.route("/category/:category").get(categoryMealValidator, categoryMeals);
 
 router
   .route("/restaurant/:restaurant")
-  .get(restaurantMealValidator, getRestaurantMeals);
+  .get(restaurantMealValidator, restaurantMeals);
 
 router
   .route("/id/:id")
-  .get(specificMealsValidator, getSpecificMeal)
+  .get(specificMealsValidator, specificMeal)
   .patch(verifyToken, addMealRatingValidator, addMealRating);
 
 router.route("/favorite/:mealId").patch(verifyToken, addMealToFavorite);
-router.route("/favorite").get(verifyToken, getAllFavoriteMeals);
+router.route("/favorite").get(verifyToken, allFavoriteMeals);
 
 module.exports = router;

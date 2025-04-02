@@ -99,6 +99,8 @@ const getRestaurantVendor = asyncHandler(async (req, res, next) => {
 const getRestaurantById = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const restaurant = req.params.id;
+  console.log(restaurant);
+
   // const foundUser = await User.findById(user);
   // if (!foundUser) {
   //   return next(new ApiErrors(req.__("user_not_found"), 404));
@@ -183,11 +185,6 @@ const getRandomNearByRestaurants = asyncHandler(async (req, res, next) => {
  * @access protected
  */
 const allNearbyRestaurants = asyncHandler(async (req, res, next) => {
-  const user = req.user;
-  const foundUser = await User.findById(user);
-  if (!foundUser) {
-    return next(new ApiErrors(req.__("user_not_found"), 404));
-  }
   /** @pagination */
   const page = req.query.page || 1;
   const limit = req.query.limit || 5;

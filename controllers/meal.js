@@ -71,7 +71,7 @@ const addMeal = asyncHandler(async (req, res, next) => {
   foundRestaurant.foods.push(newMeal._id);
   foundRestaurant.save();
 
-  return res.status(201).json(newMeal);
+  return res.status(201).json({ message: "Meal created successfully" });
 });
 
 const addMealImages = asyncHandler(async (req, res, next) => {
@@ -98,7 +98,7 @@ const addMealImages = asyncHandler(async (req, res, next) => {
  * @route GET /api/v1/meal/:category
  * @access public
  */
-const getCategoryMeals = asyncHandler(async (req, res, next) => {
+const categoryMeals = asyncHandler(async (req, res, next) => {
   /** @category */
   const category = req.params.category;
   const foundCategory = await Category.findById({ _id: category });
@@ -126,7 +126,7 @@ const getCategoryMeals = asyncHandler(async (req, res, next) => {
  * @route GET /api/v1/meal/restaurant/:restaurant
  * @access public
  */
-const getRestaurantMeals = asyncHandler(async (req, res, next) => {
+const restaurantMeals = asyncHandler(async (req, res, next) => {
   /** @restaurant */
   const restaurant = req.params.restaurant;
   const foundRestaurant = await Restaurant.findById(restaurant);
@@ -163,7 +163,7 @@ const getRestaurantMeals = asyncHandler(async (req, res, next) => {
  * @route GET /api/v1/meal/:id
  * @access public
  */
-const getSpecificMeal = asyncHandler(async (req, res, next) => {
+const specificMeal = asyncHandler(async (req, res, next) => {
   const meal = req.params.id;
   const foundMeal = await Meal.findById(meal)
     .populate({
@@ -183,65 +183,29 @@ const getSpecificMeal = asyncHandler(async (req, res, next) => {
  * @route GET /api/v1/meal/random
  * @access public
  */
-const getRandomMeals = asyncHandler(async (req, res, next) => {
+const randomMeals = asyncHandler(async (req, res, next) => {
   const { latitude, longitude } = req.query;
   const size = +req.query.size || 5;
-
-  /** @paginate */
   const page = +req.query.page || 1;
   const limit = +req.query.limit || 10;
   const skip = (page - 1) * limit;
+  const sort = { createdAt: -1 }; // تأكد أن لديك فهرس على هذا الحقل
 
-  /** @sorting */
-  const sort = req.query.sort || { createdAt: -1 };
-
-  let meals;
-  let message;
-  meals = await Meal.aggregate([
-    {
-      $match: {
-        "coords.latitude": { $eq: latitude },
-        "coords.longitude": { $eq: longitude },
-        isAvailable: true,
+  try {
+    let meals = await Meal.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          },
+          distanceField: "distance",
+          spherical: true,
+          maxDistance: 5000, // يمكنك تحديد نطاق البحث
+        },
       },
-    },
-    { $sort: sort },
-    { $skip: skip },
-    { $limit: limit },
-    { $sample: { size: size } },
-
-    {
-      $lookup: {
-        from: "restaurants",
-        localField: "restaurant",
-        foreignField: "_id",
-        pipeline: [{ $project: { title: 1, logo: 1, _id: 1 } }],
-        as: "restaurant",
-      },
-    },
-    { $unwind: "$restaurant" },
-    {
-      $project: {
-        _id: 1,
-        title: 1,
-        time: 1,
-        rating: 1,
-        price: 1,
-        isNewMeal: 1,
-        images: 1,
-        priceWithoutDiscount: 1,
-        "restaurant.logo": 1,
-        "restaurant.title": 1,
-      },
-    },
-  ]);
-
-  if (meals.length === 0) {
-    message = req.__("meals_not_found_location");
-    meals = await Meal.aggregate([
       { $match: { isAvailable: true } },
       { $sort: sort },
-      { $skip: skip },
       { $limit: limit },
       { $sample: { size: size } },
       {
@@ -249,7 +213,7 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
           from: "restaurants",
           localField: "restaurant",
           foreignField: "_id",
-          pipeline: [{ $project: { title: 1, logo: 1, _id: 0 } }],
+          pipeline: [{ $project: { title: 1, logo: 1 } }],
           as: "restaurant",
         },
       },
@@ -269,12 +233,15 @@ const getRandomMeals = asyncHandler(async (req, res, next) => {
         },
       },
     ]);
-  }
 
-  if (!meals) {
-    return next(new ApiErrors(req.__("meal_not_found"), 404));
+    if (!meals.length) {
+      return next(new ApiErrors(req.__("meal_not_found"), 404));
+    }
+
+    return res.status(200).json({ page, meals });
+  } catch (error) {
+    return next(new ApiErrors(error.message, 500));
   }
-  return res.status(200).json({ page, meals });
 });
 
 /**
@@ -394,7 +361,7 @@ const addMealToFavorite = asyncHandler(async (req, res, next) => {
  * @route GET /api/v1/meals/favorite
  * @access protected
  */
-const getAllFavoriteMeals = asyncHandler(async (req, res, next) => {
+const allFavoriteMeals = asyncHandler(async (req, res, next) => {
   const user = req.user;
   const foundUser = await User.findById(user);
   if (!foundUser) {
@@ -406,14 +373,33 @@ const getAllFavoriteMeals = asyncHandler(async (req, res, next) => {
   return res.status(200).json(favoriteMeals);
 });
 
+/**
+ * @description Get all meals offer available
+ * @route GET /api/v1/meals/offers
+ * @access public
+ */
+const mealsOffer = asyncHandler(async (req, res, next) => {
+  const { limit, size } = req.query;
+  const offers = await Meal.find({ isOffer: true })
+    .limit(limit)
+    .select(
+      "price priceWithoutDiscount isOffer title rating ratingCount images "
+    );
+  if (!offers) {
+    return next(new ApiErrors("Meals offer not found", 404));
+  }
+  return res.status(200).json(offers);
+});
+
 module.exports = {
   addMeal,
   addMealImages,
-  getCategoryMeals,
-  getRestaurantMeals,
-  getSpecificMeal,
-  getRandomMeals,
+  mealsOffer,
+  categoryMeals,
+  restaurantMeals,
+  specificMeal,
+  randomMeals,
   addMealRating,
   addMealToFavorite,
-  getAllFavoriteMeals,
+  allFavoriteMeals,
 };

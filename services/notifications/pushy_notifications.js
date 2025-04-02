@@ -26,7 +26,7 @@ async function sendNotificationToUser(title, message, deviceToken, next) {
     // Log errors to console
     if (err) {
       return next(
-        new ApiErrors(`Failed to send notification for ${deviceToken}`)
+        new ApiErrors(`Failed to send notification for ${deviceToken}`, 404)
       );
     }
     // Log success

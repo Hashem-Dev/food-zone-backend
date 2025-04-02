@@ -16,7 +16,7 @@ const {
 } = require("../controllers/admin/notification");
 const { createPromotion } = require("../controllers/admin/promotion");
 
-// router.use(verifyToken, verifyAdminToken);
+router.use(verifyToken, verifyAdminToken);
 
 /** @Users */
 router.route("/users").get(getAllUsers);

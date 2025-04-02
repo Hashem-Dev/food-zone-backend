@@ -1,0 +1,10 @@
+[
+  {
+    "url": "http://localhost:5000/api/v1/users/",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"email\": \"john@example.com\",\"username\": \"Hashem Wanous\",\"password\": \"Password!@12\",\"deviceToken\": \"412b180d0faccb36647d8c\",\"deviceAuthKey\": \"078d643b32e251a6c7c2bd15955de5bc4c09f6482fb812031ecc07e9b88784c6\"}"
+  }
+]
