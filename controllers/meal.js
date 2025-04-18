@@ -189,21 +189,10 @@ const randomMeals = asyncHandler(async (req, res, next) => {
   const page = +req.query.page || 1;
   const limit = +req.query.limit || 10;
   const skip = (page - 1) * limit;
-  const sort = { createdAt: -1 }; // تأكد أن لديك فهرس على هذا الحقل
+  const sort = { createdAt: -1 };
 
   try {
     let meals = await Meal.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: "Point",
-            coordinates: [parseFloat(longitude), parseFloat(latitude)],
-          },
-          distanceField: "distance",
-          spherical: true,
-          maxDistance: 5000, // يمكنك تحديد نطاق البحث
-        },
-      },
       { $match: { isAvailable: true } },
       { $sort: sort },
       { $limit: limit },

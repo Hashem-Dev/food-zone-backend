@@ -76,6 +76,7 @@ const mealSchema = new Schema(
   },
   { timestamps: true }
 );
+mealSchema.index({ location: "2dsphere" });
 mealSchema.index({ "title.en": "text" });
 const Meal = model("Meal", mealSchema);
 module.exports = Meal;
