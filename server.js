@@ -48,6 +48,7 @@ if (process.env.NODE_ENV === "development") {
 /** @Language */
 app.use(locale.localization);
 app.use(locale.serverLanguage);
+// hi
 
 /** @Connect to MongoDB Database */
 connectDB(() =>
