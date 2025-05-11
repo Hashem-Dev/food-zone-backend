@@ -20,16 +20,7 @@ const {
  * @access public
  */
 const register = asyncHandler(async (req, res, next) => {
-  const {
-    slug,
-    name,
-    email,
-    password,
-    adminAccessKey,
-    vendorAccessKey,
-    deviceToken,
-    deviceAuthKey,
-  } = req.body;
+  const { slug, name, email, password, deviceToken, deviceAuthKey } = req.body;
   let { isAdmin, role } = req.body;
   const existsUser = await User.findOne({ email });
   if (existsUser) {
@@ -108,7 +99,7 @@ const register = asyncHandler(async (req, res, next) => {
  * @access public
  */
 const login = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, deviceToken, deviceAuthKey } = req.body;
   const foundUser = await User.findOne({ email });
   if (!foundUser) {
     return next(new ApiErrors(req.__("user_not_found"), 404));
@@ -159,6 +150,8 @@ const login = asyncHandler(async (req, res, next) => {
         $push: {
           notifications: { $each: createNotifications.map((not) => not._id) },
         },
+        deviceToken,
+        deviceAuthKey,
       },
       { new: true }
     );

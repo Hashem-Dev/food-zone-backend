@@ -14,15 +14,6 @@ const port = process.env.PORT || 5000;
 const api = process.env.API;
 const app = express();
 
-// autoCannon(
-//   {
-//     url: "http://localhost:5000/api/v1/",
-//     connections: 100,
-//     duration: 10,
-//   },
-//   console.log
-// );
-
 /** @Routes */
 const usersRoutes = require("./routes/user");
 const adminRoutes = require("./routes/admin");

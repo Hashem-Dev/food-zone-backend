@@ -13,7 +13,8 @@ const { default: slugify } = require("slugify");
  * @access public
  */
 const registerWithGoogle = asyncHandler(async (req, res, next) => {
-  const { googleId, email, imageUrl, displayName } = req.body;
+  const { googleId, email, imageUrl, displayName, deviceToken, deviceAuthKey } =
+    req.body;
   const user = await User.findOne({ googleId, email });
   if (user) {
     return next(new ApiErrors("This email already exist", 409));
@@ -27,6 +28,8 @@ const registerWithGoogle = asyncHandler(async (req, res, next) => {
     password: "Set your password",
     role: "user",
     emailOtp: 1,
+    deviceToken,
+    deviceAuthKey,
   });
   if (!newUser) {
     return next(new ApiErrors("User Unauthenticated.", 400));
@@ -48,7 +51,7 @@ const registerWithGoogle = asyncHandler(async (req, res, next) => {
  */
 
 const loginWithGoogle = asyncHandler(async (req, res, next) => {
-  const { googleId, email } = req.body;
+  const { googleId, email, deviceToken, deviceAuthKey } = req.body;
   const foundUser = await User.findOne({ email });
   if (!foundUser) {
     return next(
@@ -65,6 +68,8 @@ const loginWithGoogle = asyncHandler(async (req, res, next) => {
   foundUser.googleId = googleId;
   foundUser.accessToken = accessToken;
   foundUser.refreshToken = refreshToken;
+  foundUser.deviceToken = deviceToken;
+  foundUser.deviceAuthKey = deviceAuthKey;
 
   await foundUser.save();
 
