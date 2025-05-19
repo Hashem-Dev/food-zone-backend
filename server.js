@@ -1,105 +1,99 @@
-// server.js
-const cluster = require("cluster");
-const os = require("os");
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
-
 const express = require("express");
 const morgan = require("morgan");
 const multer = require("multer");
-const compression = require("compression");
-
 const globalErrors = require("./services/global-errors");
 const connectDB = require("./config/database-config");
 const locale = require("./config/locale-config");
 const cors = require("./config/cors-config");
 const ApiErrors = require("./utils/api-errors");
+const compression = require("compression");
 
-// عدد النوى
-const numCPUs = os.cpus().length;
+const port = process.env.PORT || 5000;
+const api = process.env.API;
+const app = express();
+app.use(compression());
 
-if (cluster.isMaster) {
-  console.log(`Master ${process.pid} is running`);
+/** @Routes */
+const usersRoutes = require("./routes/user");
+const adminRoutes = require("./routes/admin");
+const addressRoutes = require("./routes/address");
+const categoryRoutes = require("./routes/category");
+const restaurantRoutes = require("./routes/restaurant");
+const mealRoutes = require("./routes/meal");
+const tokenRoutes = require("./routes/token");
+const reviewsRoutes = require("./routes/reviews");
+const notificationsRoute = require("./routes/notifications");
+const paymentRoutes = require("./routes/payment");
+const ordersRoutes = require("./routes/order");
+const promotionsRoutes = require("./routes/promotion");
+const searchRoutes = require("./routes/search");
 
-  // إنشاء Worker لكل نواة
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+app.use(express.json());
+app.use(cors);
 
-  // في حال توقف Worker، نعيد تشغيله
-  cluster.on("exit", (worker, code, signal) => {
-    console.warn(
-      `Worker ${worker.process.pid} died (${signal || code}). Forking a new one...`
-    );
-    cluster.fork();
-  });
-} else {
-  // كود الـ Worker: هنا ننشئ تطبيق Express فعلياً
-  const app = express();
-  const port = process.env.PORT || 5000;
-  const api = process.env.API;
-
-  // Middleware
-  app.use(compression({ threshold: "1kb" }));
-  app.use(express.json());
-  app.use(cors);
-
-  if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"));
-  }
-
-  // Localization
-  app.use(locale.localization);
-  app.use(locale.serverLanguage);
-
-  /** @Connect to MongoDB + start server */
-  connectDB(() => {
-    app.listen(port, () => {
-      console.log(
-        `Worker ${process.pid} started in ${process.env.NODE_ENV || "production"} mode on port ${port}`
-      );
-    });
-  });
-
-  /** @Routes */
-  app.use(`${api}/admin`, require("./routes/admin"));
-  app.use(`${api}/users`, require("./routes/user"));
-  app.use(`${api}/address`, require("./routes/address"));
-  app.use(`${api}/restaurant`, require("./routes/restaurant"));
-  app.use(`${api}/category`, require("./routes/category"));
-  app.use(`${api}/meal`, require("./routes/meal"));
-  app.use(`${api}/token`, require("./routes/token"));
-  app.use(`${api}/reviews`, require("./routes/reviews"));
-  app.use(`${api}/notification`, require("./routes/notifications"));
-  app.use(`${api}/payment`, require("./routes/payment"));
-  app.use(`${api}/order`, require("./routes/order"));
-  app.use(`${api}/promotion`, require("./routes/promotion"));
-  app.use(`${api}/search`, require("./routes/search"));
-
-  /** Multer errors */
-  app.use((err, req, res, next) => {
-    if (err instanceof multer.MulterError) {
-      return next(new ApiErrors(err.message, 400));
-    }
-    next(err);
-  });
-
-  /** 404 for unknown routes */
-  app.all("*", (req, res, next) => {
-    next(new ApiErrors(`Cannot find ${req.originalUrl}`, 404));
-  });
-
-  /** Global error handler */
-  app.use(globalErrors);
-
-  /** Process-level handlers (optional) */
-  process.on("uncaughtException", (err) => {
-    console.error("Unhandled Exception in worker", process.pid, err);
-    process.exit(1); // worker will be respawned by master
-  });
-
-  process.on("unhandledRejection", (reason, promise) => {
-    console.error("Unhandled Rejection in worker", process.pid, reason);
-    process.exit(1);
-  });
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
+
+/** @Language */
+app.use(locale.localization);
+app.use(locale.serverLanguage);
+// hi
+
+/** @Connect to MongoDB Database */
+connectDB(() =>
+  app.listen(port, () => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Start In Development Mode");
+    } else {
+      console.log("Start In Production Mode");
+    }
+  })
+);
+
+/** @Mount routes */
+app.use(`${api}/admin`, adminRoutes);
+app.use(`${api}/users`, usersRoutes);
+app.use(`${api}/address`, addressRoutes);
+app.use(`${api}/restaurant`, restaurantRoutes);
+app.use(`${api}/category`, categoryRoutes);
+app.use(`${api}/meal`, mealRoutes);
+app.use(`${api}/token`, tokenRoutes);
+app.use(`${api}/reviews`, reviewsRoutes);
+app.use(`${api}/notification`, notificationsRoute);
+app.use(`${api}/payment`, paymentRoutes);
+app.use(`${api}/order`, ordersRoutes);
+app.use(`${api}/promotion`, promotionsRoutes);
+app.use(`${api}/search`, searchRoutes);
+
+/** @ErrorHandling */
+
+/** Multer errors */
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return next(new ApiErrors(error.message, 400));
+  } else return next(error);
+});
+
+/** Route errors */
+app.all("*", (req, res, next) => {
+  const error = new ApiErrors(
+    `Can not find this resource ${req.originalUrl}`,
+    404
+  );
+  return next(error);
+});
+
+app.use(globalErrors);
+
+/** @uncaughtException */
+process.on("uncaughtException", (error) => {
+  console.error("Unhandled Exception:", error);
+});
+
+/** @unhandledRejection  */
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
