@@ -40,7 +40,7 @@ if (cluster.isMaster) {
   const api = process.env.API;
 
   // Middleware
-  // app.use(compression());
+  app.use(compression({ threshold: "1kb" }));
   app.use(express.json());
   app.use(cors);
 
